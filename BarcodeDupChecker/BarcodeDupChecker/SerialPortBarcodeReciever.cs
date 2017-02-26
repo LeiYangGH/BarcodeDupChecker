@@ -25,6 +25,8 @@ namespace BarcodeDupChecker
                 else
                     portName = "COM1";
             }
+            Log.Instance.Logger.InfoFormat("portName={0}", portName);
+
             this.serialPort.PortName = portName;
 
             //this.serialPort.PortName = "COM3";
@@ -34,7 +36,15 @@ namespace BarcodeDupChecker
             serialPort.DataBits = 8;
             serialPort.Handshake = Handshake.None;
             serialPort.RtsEnable = true;
-            serialPort.Open();
+            try
+            {
+                serialPort.Open();
+                Log.Instance.Logger.InfoFormat("open success");
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Logger.FatalFormat(ex.Message);
+            }
         }
 
         public SerialPortBarcodeReciever()
@@ -43,8 +53,6 @@ namespace BarcodeDupChecker
             this.serialPort.DataReceived += Sp_DataReceived;
 
         }
-
-
 
         private void Sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {

@@ -9,5 +9,7 @@ namespace BarcodeDupChecker
     public interface IBarcodeReciever
     {
         event EventHandler<string> BarcodeRecieved;
+
+
     }
 }

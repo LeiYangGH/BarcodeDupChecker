@@ -26,7 +26,7 @@ namespace BarcodeDupChecker
                 using (SQLiteConnection conn = new SQLiteConnection(connstring))
                 {
                     conn.Open();
-                    string sql = "CREATE TABLE TBarcode (ID integer primary key autoincrement, Barcode CHAR(20))";
+                    string sql = "CREATE TABLE if not exists TBarcode (ID integer primary key autoincrement, Barcode CHAR(20))";
                     SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                     cmd.ExecuteNonQuery();
                 }

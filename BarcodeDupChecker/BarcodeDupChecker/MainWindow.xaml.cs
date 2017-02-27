@@ -21,6 +21,7 @@ namespace BarcodeDupChecker
     public partial class MainWindow : Window
     {
         private IBarcodeReciever barReciever = new TimerBarcodeReciever();
+        private SqliteRepository repository = SqliteRepository.Instance;
         //private IBarcodeReciever barReciever = new SerialPortBarcodeReciever();
         private List<string> lstAllBarcodes = new List<string>();
         private List<string> lstDupBarcodes = new List<string>();
@@ -28,6 +29,7 @@ namespace BarcodeDupChecker
         {
             InitializeComponent();
             barReciever.BarcodeRecieved += BarReciever_BarcodeRecieved;
+            this.repository.CreateSqliteDb();
             Log.Instance.Logger.Info("UI started!");
         }
 

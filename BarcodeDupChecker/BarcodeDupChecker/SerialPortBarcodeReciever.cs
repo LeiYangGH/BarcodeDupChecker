@@ -54,14 +54,31 @@ namespace BarcodeDupChecker
 
         }
 
+        public void SetBarcodeLength(int length)
+        {
+            this.barcodeLength = length;
+        }
+
+        int barcodeLength = 12;
+        string full = "";
         private void Sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             SerialPort sp = (SerialPort)sender;
             string barcode = sp.ReadExisting();
-            if (this.BarcodeRecieved != null)
+            full += barcode;
+            if (full.Length >= barcodeLength)
             {
-                this.BarcodeRecieved(this, barcode);
+                if (this.BarcodeRecieved != null)
+                {
+                    this.BarcodeRecieved(this, full);
+                    full = "";
+                }
             }
+            else
+            {
+                Log.Instance.Logger.InfoFormat("{0} < {1}", barcode, barcodeLength);
+            }
+
         }
 
         public event EventHandler<string> BarcodeRecieved;

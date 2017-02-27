@@ -28,6 +28,7 @@ namespace BarcodeDupChecker
         {
             InitializeComponent();
             barReciever.BarcodeRecieved += BarReciever_BarcodeRecieved;
+            Log.Instance.Logger.Info("UI started!");
         }
 
         private void BarReciever_BarcodeRecieved(object sender, string e)

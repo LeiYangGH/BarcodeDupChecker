@@ -20,8 +20,8 @@ namespace BarcodeDupChecker
     /// </summary>
     public partial class MainWindow : Window
     {
-        //private IBarcodeReciever barReciever = new TimerBarcodeReciever();
-        private IBarcodeReciever barReciever = new SerialPortBarcodeReciever();
+        private IBarcodeReciever barReciever = new TimerBarcodeReciever();
+        //private IBarcodeReciever barReciever = new SerialPortBarcodeReciever();
         private List<string> lstAllBarcodes = new List<string>();
         private List<string> lstDupBarcodes = new List<string>();
         public MainWindow()

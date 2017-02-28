@@ -41,8 +41,8 @@
                  ItemsSource="{Binding ObsAllBarcodes}" HorizontalContentAlignment="Stretch">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Border BorderBrush="{Binding HasDup, Converter={StaticResource Dup2C}}" BorderThickness="1">
-                        <Grid Margin="1">
+                    <Border Margin="1" BorderBrush="{Binding HasDup, Converter={StaticResource Dup2C}}" BorderThickness="1">
+                        <Grid >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="3*"/>

@@ -293,6 +293,7 @@ namespace BarcodeDupChecker.ViewModel
                         }
                         sw.Write("\r\n");
                     }
+                Log.Instance.Logger.Info(fileName);
                 return true;
             }
             catch (Exception ex)
@@ -337,6 +338,7 @@ namespace BarcodeDupChecker.ViewModel
         public override void Cleanup()
         {
             this.barReciever.Close();
+            Log.Instance.Logger.Error("Exit!\r\n");
             base.Cleanup();
         }
     }

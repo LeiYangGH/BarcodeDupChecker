@@ -25,12 +25,11 @@ namespace BarcodeDupChecker
         {
             InitializeComponent();
             //this.repository.CreateSqliteDb();
-            Log.Instance.Logger.Info("UI started!");
+            Log.Instance.Logger.Info("\r\nUI started!");
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            
         }
 
         //private delegate void NoArgDelegate();

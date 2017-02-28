@@ -1,31 +1,33 @@
 using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using System;
 using System.Collections.ObjectModel;
+using System.IO.Ports;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace BarcodeDupChecker.ViewModel
 {
-    /// <summary>
-    /// This class contains properties that the main View can data bind to.
-    /// <para>
-    /// Use the <strong>mvvminpc</strong> snippet to add bindable properties to this ViewModel.
-    /// </para>
-    /// <para>
-    /// You can also use Blend to data bind with the tool's support.
-    /// </para>
-    /// <para>
-    /// See http://www.galasoft.ch/mvvm
-    /// </para>
-    /// </summary>
     public class MainViewModel : ViewModelBase
     {
-        //private IBarcodeReciever barReciever = new TimerBarcodeReciever();
-        private IBarcodeReciever barReciever = new SerialPortBarcodeReciever();
+#if SerialPort
+        private SerialPortBarcodeReciever barReciever = new SerialPortBarcodeReciever();
+#else
+        private IBarcodeReciever barReciever = new TimerBarcodeReciever();
+#endif
+
 
         public MainViewModel()
         {
             this.ObsAllBarcodes = new ObservableCollection<AllBarcodeViewModel>();
             this.ObsDupBarcodes = new ObservableCollection<DupBarcodeViewModel>();
+            this.IsOpened = false;
+
+#if SerialPort
+            this.PortName = this.barReciever.GetFirstPortName();
+#else
+            this.PortName = "Timer";
+#endif
             //MessengerInstance.Register<MainWindow>(this, (p) =>
             //{
             //    this.barReciever.Close();
@@ -38,6 +40,41 @@ namespace BarcodeDupChecker.ViewModel
             else
             {
                 barReciever.BarcodeRecieved += BarReciever_BarcodeRecieved;
+
+            }
+        }
+
+        private string portName;
+        public string PortName
+        {
+            get
+            {
+                return this.portName;
+            }
+            set
+            {
+                if (this.portName != value)
+                {
+                    this.portName = value;
+                    this.RaisePropertyChanged(() => this.PortName);
+                }
+            }
+        }
+
+        private bool isOpened;
+        public bool IsOpened
+        {
+            get
+            {
+                return this.isOpened;
+            }
+            set
+            {
+                if (this.isOpened != value)
+                {
+                    this.isOpened = value;
+                    this.RaisePropertyChanged(() => this.IsOpened);
+                }
 
             }
         }
@@ -96,6 +133,122 @@ namespace BarcodeDupChecker.ViewModel
                     }
                 });
         }
+
+        private bool isOpening;
+        private RelayCommand openCommand;
+
+        public RelayCommand OpenCommand
+        {
+            get
+            {
+                return openCommand
+                  ?? (openCommand = new RelayCommand(
+                    async () =>
+                    {
+                        if (isOpening)
+                        {
+                            return;
+                        }
+
+                        isOpening = true;
+                        OpenCommand.RaiseCanExecuteChanged();
+
+                        await Open();
+
+                        isOpening = false;
+                        OpenCommand.RaiseCanExecuteChanged();
+                    },
+                    () => !isOpening));
+            }
+        }
+        private async Task Open()
+        {
+            this.barReciever.Start();
+            this.IsOpened = true;
+        }
+
+
+        private bool isCloseing;
+        private RelayCommand closeCommand;
+
+        public RelayCommand CloseCommand
+        {
+            get
+            {
+                return closeCommand
+                  ?? (closeCommand = new RelayCommand(
+                    async () =>
+                    {
+                        if (isCloseing)
+                        {
+                            return;
+                        }
+
+                        isCloseing = true;
+                        CloseCommand.RaiseCanExecuteChanged();
+
+                        await Close();
+
+                        isCloseing = false;
+                        CloseCommand.RaiseCanExecuteChanged();
+                    },
+                    () => !isCloseing));
+            }
+        }
+        private async Task Close()
+        {
+            this.barReciever.Close();
+            this.IsOpened = false;
+        }
+
+
+        private bool isSeting;
+        private RelayCommand setCommand;
+
+        public RelayCommand SetCommand
+        {
+            get
+            {
+                return setCommand
+                  ?? (setCommand = new RelayCommand(
+                    async () =>
+                    {
+                        if (isSeting)
+                        {
+                            return;
+                        }
+
+                        isSeting = true;
+                        SetCommand.RaiseCanExecuteChanged();
+
+                        await Set();
+
+                        isSeting = false;
+                        SetCommand.RaiseCanExecuteChanged();
+                    },
+                    () => !isSeting));
+            }
+        }
+        private async Task Set()
+        {
+            this.barReciever.Close();
+            this.IsOpened = false;
+
+            SettingWindow setWin = new SettingWindow();
+            if (setWin.ShowDialog() ?? true)
+            {
+#if SerialPort
+                SettingsViewModel setVM = (setWin.DataContext) as SettingsViewModel;
+                this.PortName = setVM.SelectedPortName;
+                this.barReciever.SetSerialPortParameters(this.PortName);
+#else
+        
+#endif
+            }
+
+        }
+
+
 
         private bool CheckDup(string barcode, int lastIndex)
         {

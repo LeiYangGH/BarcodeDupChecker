@@ -9,57 +9,49 @@ namespace BarcodeDupChecker
 {
     public class SerialPortBarcodeReciever : IBarcodeReciever
     {
-        //Timer t = new Timer(500);
+        int barcodeLength = 12;
         SerialPort serialPort = new SerialPort();
 
+        public SerialPortBarcodeReciever()
+        {
+            this.SetSerialPortParameters("");
+            this.serialPort.DataReceived += Sp_DataReceived;
+        }
+
+        public string GetFirstPortName()
+        {
+            string[] names = SerialPort.GetPortNames();
+            if (names.Length > 0)
+                return names[0];
+            else
+                return "COM?";
+        }
 
         public void SetSerialPortParameters(string portName)
         {
             if (string.IsNullOrWhiteSpace(portName))
             {
-                string[] names = SerialPort.GetPortNames();
-                if (names.Length > 0)
-
-                    portName = names[0];
-
-                else
-                    portName = "COM1";
+                portName = this.GetFirstPortName();
             }
             Log.Instance.Logger.InfoFormat("portName={0}", portName);
 
             this.serialPort.PortName = portName;
-
-            //this.serialPort.PortName = "COM3";
             serialPort.BaudRate = 9600;
             serialPort.Parity = Parity.None;
             serialPort.StopBits = StopBits.One;
             serialPort.DataBits = 8;
             serialPort.Handshake = Handshake.None;
             serialPort.RtsEnable = true;
-            try
-            {
-                serialPort.Open();
-                Log.Instance.Logger.InfoFormat("open success");
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Logger.FatalFormat(ex.Message);
-            }
-        }
-
-        public SerialPortBarcodeReciever()
-        {
-            this.SetSerialPortParameters("");
-            this.serialPort.DataReceived += Sp_DataReceived;
 
         }
+
+
 
         public void SetBarcodeLength(int length)
         {
             this.barcodeLength = length;
         }
 
-        int barcodeLength = 12;
         string full = "";
         private void Sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
@@ -84,6 +76,19 @@ namespace BarcodeDupChecker
         public void Close()
         {
             this.serialPort.Close();
+        }
+
+        public void Start()
+        {
+            try
+            {
+                serialPort.Open();
+                Log.Instance.Logger.InfoFormat("open success");
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Logger.FatalFormat(ex.Message);
+            }
         }
 
         public event EventHandler<string> BarcodeRecieved;

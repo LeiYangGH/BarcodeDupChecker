@@ -9,26 +9,35 @@
         mc:Ignorable="d"
         DataContext="{Binding Main, Source={StaticResource Locator}}"
         Unloaded="Window_Loaded"
+        WindowStartupLocation="CenterScreen"
         Title="MainWindow" Height="350" Width="525">
     <Window.Resources>
         <Style TargetType="TextBlock" x:Key="BarcodeStyle">
             <Setter Property="FontSize" Value="20"/>
         </Style>
         <cvt:Dup2ColorConverter x:Key="Dup2C"/>
+        <cvt:InverseBooleanConverter x:Key="InvBool"/>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
-            <RowDefinition/>
             <RowDefinition Height="auto"/>
+            <RowDefinition />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <TextBlock Style="{StaticResource BarcodeStyle}" HorizontalAlignment="Center" Text="{Binding ObsAllBarcodes.Count,Mode=OneWay}" Grid.Row="0" Grid.Column="0"/>
-        <TextBlock Style="{StaticResource BarcodeStyle}" HorizontalAlignment="Center" Text="{Binding ObsDupBarcodes.Count,Mode=OneWay}"  Grid.Row="0" Grid.Column="1"/>
-        <ListBox  Grid.Row="1" Grid.Column="0" 
+        <Menu Grid.ColumnSpan="2">
+            <MenuItem Header="{Binding PortName,Mode=OneWay}" Focusable="False"></MenuItem>
+            <MenuItem Header="运行" Command="{Binding OpenCommand}" IsEnabled="{Binding IsOpened, Converter={StaticResource InvBool},Mode=OneWay}"></MenuItem>
+            <MenuItem Header="停止" Command="{Binding CloseCommand}" IsEnabled="{Binding IsOpened, Mode=OneWay}"></MenuItem>
+            <MenuItem Header="设置" Command="{Binding SetCommand}"></MenuItem>
+            <MenuItem Header="导出"></MenuItem>
+        </Menu>
+        <TextBlock Style="{StaticResource BarcodeStyle}" HorizontalAlignment="Center" Text="{Binding ObsAllBarcodes.Count,Mode=OneWay}" Grid.Row="1" Grid.Column="0"/>
+        <TextBlock Style="{StaticResource BarcodeStyle}" HorizontalAlignment="Center" Text="{Binding ObsDupBarcodes.Count,Mode=OneWay}"  Grid.Row="1" Grid.Column="1"/>
+        <ListBox  Grid.Row="2" Grid.Column="0" 
                  ItemsSource="{Binding ObsAllBarcodes}" HorizontalContentAlignment="Stretch">
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -45,7 +54,7 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <ListBox  Grid.Row="1" Grid.Column="1" 
+        <ListBox  Grid.Row="2" Grid.Column="1" 
                  ItemsSource="{Binding ObsDupBarcodes}" HorizontalContentAlignment="Stretch">
             <ListBox.ItemTemplate>
                 <DataTemplate>

@@ -27,7 +27,6 @@ namespace BarcodeDupChecker
         {
             this.lstCount = this.lstBarcodes.Count;
             t.Elapsed += T_Elapsed;
-            t.Start();
         }
 
         private void T_Elapsed(object sender, ElapsedEventArgs e)
@@ -42,6 +41,11 @@ namespace BarcodeDupChecker
         public void Close()
         {
             this.t.Close();
+        }
+
+        public void Start()
+        {
+            t.Start();
         }
 
         public event EventHandler<string> BarcodeRecieved;

@@ -9,7 +9,7 @@ using System.Windows.Media;
 
 namespace BarcodeDupChecker.Converters
 {
-    [ValueConversion(typeof(string), typeof(Brush))]
+    [ValueConversion(typeof(bool), typeof(Brush))]
     public class Dup2ColorConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

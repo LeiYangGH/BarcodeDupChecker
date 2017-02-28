@@ -5,6 +5,8 @@ using System.Collections.ObjectModel;
 using System.IO.Ports;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Win32;
+using System.IO;
 
 namespace BarcodeDupChecker.ViewModel
 {
@@ -235,21 +237,82 @@ namespace BarcodeDupChecker.ViewModel
             this.IsOpened = false;
 
             SettingWindow setWin = new SettingWindow();
-            if (setWin.ShowDialog() ?? true)
+            if (setWin.ShowDialog() ?? false)
             {
 #if SerialPort
                 SettingsViewModel setVM = (setWin.DataContext) as SettingsViewModel;
                 this.PortName = setVM.SelectedPortName;
                 this.barReciever.SetSerialPortParameters(this.PortName);
 #else
-        
+
 #endif
             }
 
         }
 
+        private bool isExporting;
+        private RelayCommand exportCommand;
 
+        public RelayCommand ExportCommand
+        {
+            get
+            {
+                return exportCommand
+                  ?? (exportCommand = new RelayCommand(
+                    async () =>
+                    {
+                        if (isExporting)
+                        {
+                            return;
+                        }
 
+                        isExporting = true;
+                        ExportCommand.RaiseCanExecuteChanged();
+
+                        await Export();
+
+                        isExporting = false;
+                        ExportCommand.RaiseCanExecuteChanged();
+                    },
+                    () => !isExporting));
+            }
+        }
+
+        private bool ExportTabTxt(string fileName)
+        {
+            try
+            {
+                using (StreamWriter sw = new StreamWriter(fileName))
+                    foreach (var dupVM in this.ObsDupBarcodes)
+                    {
+                        sw.Write(dupVM.Barcode);
+                        foreach (int index in dupVM.ObsDupIndexes)
+                        {
+                            sw.Write("\t");
+                            sw.Write(index);
+                        }
+                        sw.Write("\r\n");
+                    }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Logger.Error(ex.Message);
+                return false;
+            }
+        }
+
+        private async Task Export()
+        {
+            this.barReciever.Close();
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.Filter = "Text (*.txt)|*.txt";
+            if (dlg.ShowDialog() ?? false)
+            {
+                this.ExportTabTxt(dlg.FileName);
+            }
+
+        }
         private bool CheckDup(string barcode, int lastIndex)
         {
             AllBarcodeViewModel allVM = this.ObsAllBarcodes.FirstOrDefault(x => x.Barcode == barcode);

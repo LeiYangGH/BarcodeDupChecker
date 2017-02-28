@@ -4,8 +4,18 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BarcodeDupChecker"
+        xmlns:vm="clr-namespace:BarcodeDupChecker.ViewModel"
+        xmlns:cvt="clr-namespace:BarcodeDupChecker.Converters"
         mc:Ignorable="d"
+        DataContext="{Binding Main, Source={StaticResource Locator}}"
+        Unloaded="Window_Loaded"
         Title="MainWindow" Height="350" Width="525">
+    <Window.Resources>
+        <Style TargetType="TextBlock" x:Key="BarcodeStyle">
+            <Setter Property="FontSize" Value="20"/>
+        </Style>
+        <cvt:Dup2ColorConverter x:Key="Dup2C"/>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -16,9 +26,40 @@
             <ColumnDefinition/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <TextBox Name="txtAllCount" IsReadOnly="True" Grid.Row="0" Grid.Column="0"/>
-        <TextBox Name="txtDupCount" IsReadOnly="True" Grid.Row="0" Grid.Column="1"/>
-        <ListBox Name="lstAll" Grid.Row="1" Grid.Column="0"/>
-        <ListBox Name="lstDup" Grid.Row="1" Grid.Column="1"/>
+        <TextBlock Style="{StaticResource BarcodeStyle}" HorizontalAlignment="Center" Text="{Binding ObsAllBarcodes.Count,Mode=OneWay}" Grid.Row="0" Grid.Column="0"/>
+        <TextBlock Style="{StaticResource BarcodeStyle}" HorizontalAlignment="Center" Text="{Binding ObsDupBarcodes.Count,Mode=OneWay}"  Grid.Row="0" Grid.Column="1"/>
+        <ListBox  Grid.Row="1" Grid.Column="0" 
+                 ItemsSource="{Binding ObsAllBarcodes}" HorizontalContentAlignment="Stretch">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderBrush="{Binding HasDup, Converter={StaticResource Dup2C}}" BorderThickness="1">
+                        <Grid Margin="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="3*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource BarcodeStyle}" Grid.Column="0" HorizontalAlignment="Right" Text="{Binding Index,Mode=OneTime}"/>
+                            <TextBlock Style="{StaticResource BarcodeStyle}" Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Barcode,Mode=OneTime}"/>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <ListBox  Grid.Row="1" Grid.Column="1" 
+                 ItemsSource="{Binding ObsDupBarcodes}" HorizontalContentAlignment="Stretch">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="1" ToolTip="{Binding IndexesTooltip,Mode=OneWay}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="4*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource BarcodeStyle}" Grid.Column="0" HorizontalAlignment="Center" Text="{Binding Barcode,Mode=OneTime}"/>
+                        <TextBlock Style="{StaticResource BarcodeStyle}" Grid.Column="1" HorizontalAlignment="Center" Text="{Binding ObsDupIndexes.Count , Mode=OneWay}"
+                                   />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </Window>

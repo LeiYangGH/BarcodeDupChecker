@@ -10,8 +10,7 @@ namespace BarcodeDupChecker
     public class TimerBarcodeReciever : IBarcodeReciever
     {
         Timer t = new Timer(500);
-
-        int tickCount = 0;
+        Random r = new Random();
         int lstCount;
         private List<string> lstBarcodes = new List<string>
         {
@@ -35,10 +34,14 @@ namespace BarcodeDupChecker
         {
             if (this.BarcodeRecieved != null)
             {
-                this.tickCount++;
-                string barcode = this.lstBarcodes[this.tickCount % this.lstCount];
+                string barcode = this.lstBarcodes[r.Next(0, lstCount - 1)];
                 this.BarcodeRecieved(this, barcode);
             }
+        }
+
+        public void Close()
+        {
+            this.t.Close();
         }
 
         public event EventHandler<string> BarcodeRecieved;

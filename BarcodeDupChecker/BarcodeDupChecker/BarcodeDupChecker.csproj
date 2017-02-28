@@ -88,11 +88,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converters\Dup2ColorConverter.cs" />
     <Compile Include="IRepository.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="SerialPortBarcodeReciever.cs" />
     <Compile Include="SqliteRepository.cs" />
     <Compile Include="TimerBarcodeReciever.cs" />
+    <Compile Include="ViewModel\AllBarcodeViewModel.cs" />
+    <Compile Include="ViewModel\DupBarcodeViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Page Include="MainWindow.xaml">

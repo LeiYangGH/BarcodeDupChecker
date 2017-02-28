@@ -81,6 +81,11 @@ namespace BarcodeDupChecker
 
         }
 
+        public void Close()
+        {
+            this.serialPort.Close();
+        }
+
         public event EventHandler<string> BarcodeRecieved;
     }
 }

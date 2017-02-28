@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
+using GalaSoft.MvvmLight;
 namespace BarcodeDupChecker
 {
     /// <summary>
@@ -20,44 +20,17 @@ namespace BarcodeDupChecker
     /// </summary>
     public partial class MainWindow : Window
     {
-        private IBarcodeReciever barReciever = new TimerBarcodeReciever();
         private SqliteRepository repository = SqliteRepository.Instance;
-        //private IBarcodeReciever barReciever = new SerialPortBarcodeReciever();
-        private List<string> lstAllBarcodes = new List<string>();
-        private List<string> lstDupBarcodes = new List<string>();
         public MainWindow()
         {
             InitializeComponent();
-            barReciever.BarcodeRecieved += BarReciever_BarcodeRecieved;
-            this.repository.CreateSqliteDb();
+            //this.repository.CreateSqliteDb();
             Log.Instance.Logger.Info("UI started!");
-        }
-
-        private void BarReciever_BarcodeRecieved(object sender, string e)
-        {
-            string barcode = e;
-            this.lstAll.Dispatcher.Invoke(() =>
-            {
-                this.CheckDup(barcode);
-                this.lstAllBarcodes.Add(barcode);
-                this.lstAll.Items.Add(barcode);
-                this.txtAllCount.Text = this.lstAllBarcodes.Count.ToString();
-            });
-        }
-
-        private void CheckDup(string dupBarcode)
-        {
-            if (this.lstAllBarcodes.Contains(dupBarcode))
-            {
-                this.lstDupBarcodes.Add(dupBarcode);
-                this.lstDup.Items.Add(dupBarcode);
-                this.txtDupCount.Text = this.lstDupBarcodes.Count.ToString();
-            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
+            
         }
 
         //private delegate void NoArgDelegate();

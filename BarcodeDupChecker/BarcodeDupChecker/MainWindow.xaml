@@ -42,6 +42,8 @@
         <ListBox Name="lstAll"  Grid.Row="2" Grid.Column="0" 
                  ItemsSource="{Binding ObsAllBarcodes,Mode=OneWay,IsAsync=True}" 
                  local:ListBoxBehavior.ScrollOnNewItem="True"
+                 VirtualizingPanel.IsVirtualizing="true"
+                 VirtualizingPanel.VirtualizationMode="Recycling" 
                   HorizontalContentAlignment="Stretch">
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -76,6 +78,7 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <ListBox Name="lstIndexes" Grid.Row="2" Grid.Column="2" 
+                 IsEnabled="{Binding IsOpened, Converter={StaticResource InvBool},Mode=OneWay}"
                  SelectionMode="Single"
                  ItemsSource="{Binding SelectedObsDupBarcode.ObsDupIndexes,Mode=OneWay}"
                  SelectionChanged="lstIndexes_SelectionChanged">

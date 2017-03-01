@@ -9,7 +9,7 @@ namespace BarcodeDupChecker
 {
     public class TimerBarcodeReciever : IBarcodeReciever
     {
-        const int interval = 1000;
+        const int interval = 300;
         Timer t = new Timer(interval);
         Random r = new Random();
         private List<string> lstBarcodes = new List<string>();

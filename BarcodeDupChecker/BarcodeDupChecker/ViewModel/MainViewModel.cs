@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.Win32;
 using System.IO;
 using BarcodeDupChecker.Properties;
+using System.Diagnostics;
+
 namespace BarcodeDupChecker.ViewModel
 {
     public class MainViewModel : ViewModelBase
@@ -342,12 +344,37 @@ namespace BarcodeDupChecker.ViewModel
         private async Task Add10K()
         {
             this.barReciever.Close();
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             Random r = new Random();
-            for (int i = 0; i < 10000; i++)
+            for (int i = 1; i <= 10000; i++)
             {
                 string barcode = "BBBBBBB" + r.Next(0, 10000).ToString().PadLeft(5, '0');
-                this.GotBarcode(barcode);
+                this.obsAllBarcodes.Add(new AllBarcodeViewModel(barcode, i));
+
+                //this.GotBarcode(barcode);
             }
+            var dupBarcodes = this.obsAllBarcodes.GroupBy(x => x.Barcode).Where(g => g.Count() > 1)
+    .Select(g => g.Key).Distinct();
+            foreach (var bar in dupBarcodes)
+            {
+                this.obsDupBarcodes.Add(new DupBarcodeViewModel(bar));
+            }
+            for (int a = 0; a < this.obsAllBarcodes.Count; a++)
+            {
+                var Abar = this.obsAllBarcodes[a];
+                string barcode = Abar.Barcode;
+                if (dupBarcodes.Any(x => x == barcode))
+                {
+                    Abar.HasDup = true;
+                    var dupBar = this.obsDupBarcodes.First(x => x.Barcode == barcode);
+                    dupBar.AddDupIndex(a + 1);
+                }
+            }
+            this.RaisePropertyChanged(() => this.ObsAllBarcodes);
+            this.RaisePropertyChanged(() => this.ObsDupBarcodes);
+            sw.Stop();
+            Console.WriteLine(sw.ElapsedMilliseconds);
         }
 
         private void BarReciever_BarcodeRecieved(object sender, string e)

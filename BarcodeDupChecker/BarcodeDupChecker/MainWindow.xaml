@@ -39,7 +39,9 @@
         <TextBlock Style="{StaticResource BarcodeStyle}" HorizontalAlignment="Center" Text="{Binding ObsAllBarcodes.Count,Mode=OneWay}" Grid.Row="1" Grid.Column="0"/>
         <TextBlock Style="{StaticResource BarcodeStyle}" HorizontalAlignment="Center" Text="{Binding ObsDupBarcodes.Count,Mode=OneWay}"  Grid.Row="1" Grid.Column="1"/>
         <ListBox  Grid.Row="2" Grid.Column="0" 
-                 ItemsSource="{Binding ObsAllBarcodes,Mode=OneWay,IsAsync=True}" HorizontalContentAlignment="Stretch">
+                 ItemsSource="{Binding ObsAllBarcodes,Mode=OneWay,IsAsync=True}" 
+                 local:ListBoxBehavior.ScrollOnNewItem="True"
+                  HorizontalContentAlignment="Stretch">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid >
@@ -54,7 +56,9 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <ListBox  Grid.Row="2" Grid.Column="1" 
-                 ItemsSource="{Binding ObsDupBarcodes,Mode=OneWay,IsAsync=True}" HorizontalContentAlignment="Stretch">
+                 ItemsSource="{Binding ObsDupBarcodes,Mode=OneWay,IsAsync=True}" 
+                  local:ListBoxBehavior.ScrollOnNewItem="True"
+                  HorizontalContentAlignment="Stretch">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid Margin="1" ToolTip="{Binding IndexesTooltip,Mode=OneWay}">

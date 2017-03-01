@@ -23,7 +23,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;SerialPort</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;SerialPort1</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -88,9 +88,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Capture.cs" />
     <Compile Include="Converters\Dup2ColorConverter.cs" />
     <Compile Include="Converters\InverseBooleanConverter.cs" />
     <Compile Include="IRepository.cs" />
+    <Compile Include="ListBoxBehavior.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="SerialPortBarcodeReciever.cs" />
     <Compile Include="SettingWindow.xaml.cs">

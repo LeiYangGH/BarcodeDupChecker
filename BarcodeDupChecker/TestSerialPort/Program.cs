@@ -16,6 +16,7 @@ namespace TestSerialPortSD
             ShowAllPortNames();
 
             //-------------------下面的参数就是有可能导致条码截断的原因-------------
+            serialPort.ReadTimeout = 1000;
             serialPort.PortName = "COM3";//修改要读的串口名字
 
             serialPort.BaudRate = 9600;//波特率
@@ -63,8 +64,11 @@ namespace TestSerialPortSD
 
         private static void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
+            byte[] data = new byte[serialPort.BytesToRead];
+            serialPort.Read(data, 0, data.Length);
+            string barcode1 = Encoding.ASCII.GetString(data);
             string barcode = serialPort.ReadExisting();
-            Console.WriteLine(barcode);
+            Console.WriteLine(barcode + "\t" + barcode1);
         }
 
         static void ShowAllPortNames()

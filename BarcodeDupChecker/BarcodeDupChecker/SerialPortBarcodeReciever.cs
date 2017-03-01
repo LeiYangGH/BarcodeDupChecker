@@ -67,8 +67,7 @@ namespace BarcodeDupChecker
         string full = "";
         private void Sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            SerialPort sp = (SerialPort)sender;
-            string barcode = sp.ReadExisting();
+            string barcode = this.serialPort.ReadExisting();
             full += barcode;
             if (full.Length >= barcodeLength)
             {

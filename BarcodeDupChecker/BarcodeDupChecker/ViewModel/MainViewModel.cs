@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using System.IO;
-
+using BarcodeDupChecker.Properties;
 namespace BarcodeDupChecker.ViewModel
 {
     public class MainViewModel : ViewModelBase
@@ -115,26 +115,7 @@ namespace BarcodeDupChecker.ViewModel
             }
         }
 
-        private void BarReciever_BarcodeRecieved(object sender, string e)
-        {
-            string barcode = e;
-            if (App.Current != null)//walkaround
-                App.Current.Dispatcher.Invoke(() =>
-                {
-                    int lastIndex = this.ObsAllBarcodes.Count + 1;
-                    bool hasDup = this.CheckDup(barcode, lastIndex);
-                    AllBarcodeViewModel newAllVM = new AllBarcodeViewModel(barcode, lastIndex);
-                    this.ObsAllBarcodes.Add(newAllVM);
-                    if (hasDup)
-                    {
-                        Log.Instance.Logger.InfoFormat("Dup={0}", barcode);
-                        foreach (AllBarcodeViewModel allVM in this.ObsAllBarcodes.Where(x => x.Barcode == barcode))
-                        {
-                            allVM.HasDup = true;
-                        }
-                    }
-                });
-        }
+
 
         private bool isOpening;
         private RelayCommand openCommand;
@@ -166,9 +147,18 @@ namespace BarcodeDupChecker.ViewModel
         private async Task Open()
         {
             this.barReciever.Start();
+#if SerialPort
+            this.IsOpened = this.barReciever.IsSerailPortOpen;
+#else
             this.IsOpened = true;
-        }
+#endif
+            if (this.IsOpened)
+            {
+                Settings.Default.PortName = this.PortName;
+                Settings.Default.Save();
+            }
 
+        }
 
         private bool isCloseing;
         private RelayCommand closeCommand;
@@ -200,7 +190,11 @@ namespace BarcodeDupChecker.ViewModel
         private async Task Close()
         {
             this.barReciever.Close();
+#if SerialPort
+            this.IsOpened = this.barReciever.IsSerailPortOpen;
+#else
             this.IsOpened = false;
+#endif
         }
 
 
@@ -237,10 +231,11 @@ namespace BarcodeDupChecker.ViewModel
             this.IsOpened = false;
 
             SettingWindow setWin = new SettingWindow();
+            SettingsViewModel setVM = (setWin.DataContext) as SettingsViewModel;
+            setVM.SelectedPortName = this.PortName;
             if (setWin.ShowDialog() ?? false)
             {
 #if SerialPort
-                SettingsViewModel setVM = (setWin.DataContext) as SettingsViewModel;
                 this.PortName = setVM.SelectedPortName;
                 this.barReciever.SetSerialPortParameters(this.PortName);
 #else
@@ -314,31 +309,91 @@ namespace BarcodeDupChecker.ViewModel
             }
 
         }
-        private bool CheckDup(string barcode, int lastIndex)
+
+        private bool isAdd10King;
+        private RelayCommand add10KCommand;
+
+        public RelayCommand Add10KCommand
         {
-            AllBarcodeViewModel allVM = this.ObsAllBarcodes.FirstOrDefault(x => x.Barcode == barcode);
-            if (allVM != null)
+            get
             {
-                int firstIndex = this.ObsAllBarcodes.IndexOf(allVM) + 1;
-                DupBarcodeViewModel dupVM = this.ObsDupBarcodes.FirstOrDefault(x => x.Barcode == barcode);
-                if (dupVM == null)
-                {
-                    dupVM = new DupBarcodeViewModel(barcode);
-                    this.ObsDupBarcodes.Add(dupVM);
-                    dupVM.AddDupIndex(firstIndex);
-                }
-                dupVM.AddDupIndex(lastIndex);
-                return true;
+                return add10KCommand
+                  ?? (add10KCommand = new RelayCommand(
+                    async () =>
+                    {
+                        if (isAdd10King)
+                        {
+                            return;
+                        }
+
+                        isAdd10King = true;
+                        Add10KCommand.RaiseCanExecuteChanged();
+
+                        await Add10K();
+
+                        isAdd10King = false;
+                        Add10KCommand.RaiseCanExecuteChanged();
+                    },
+                    () => !isAdd10King));
             }
-            else
-                return false;
         }
 
+
+        private async Task Add10K()
+        {
+            this.barReciever.Close();
+            Random r = new Random();
+            for (int i = 0; i < 10000; i++)
+            {
+                string barcode = "BBBBBBB" + r.Next(0, 10000).ToString().PadLeft(5, '0');
+                this.GotBarcode(barcode);
+            }
+        }
+
+        private void BarReciever_BarcodeRecieved(object sender, string e)
+        {
+            this.GotBarcode(e);
+        }
+
+        private void GotBarcode(string barcode)
+        {
+            if (App.Current != null)//walkaround
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    int oldCount = this.ObsAllBarcodes.Count;
+                    bool hasDup = false;
+                    DupBarcodeViewModel dupVM = null;
+                    for (int a = 0; a < oldCount; a++)
+                    {
+                        AllBarcodeViewModel aVM = this.ObsAllBarcodes[a];
+                        if (aVM.Barcode == barcode)
+                        {
+                            hasDup = true;
+                            aVM.HasDup = true;
+                            Log.Instance.Logger.InfoFormat("Dup={0}", barcode);
+                            dupVM = this.ObsDupBarcodes.FirstOrDefault(x => x.Barcode == barcode);
+                            if (dupVM == null)
+                            {
+                                dupVM = new DupBarcodeViewModel(barcode);
+                                dupVM.AddDupIndex(a + 1);
+                                this.ObsDupBarcodes.Add(dupVM);
+                            }
+                            break;
+                        }
+                    }
+                    AllBarcodeViewModel newAllVM = new AllBarcodeViewModel(barcode, oldCount + 1);
+                    this.ObsAllBarcodes.Add(newAllVM);
+                    if (hasDup)
+                    {
+                        newAllVM.HasDup = true;
+                        dupVM.AddDupIndex(oldCount + 1);
+                    }
+                });
+        }
 
         public override void Cleanup()
         {
             this.barReciever.Close();
-            Log.Instance.Logger.Error("Exit!\r\n");
             base.Cleanup();
         }
     }

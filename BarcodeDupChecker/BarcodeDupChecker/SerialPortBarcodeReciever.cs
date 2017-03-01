@@ -4,7 +4,7 @@ using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using BarcodeDupChecker.Properties;
 namespace BarcodeDupChecker
 {
     public class SerialPortBarcodeReciever : IBarcodeReciever
@@ -18,11 +18,26 @@ namespace BarcodeDupChecker
             this.serialPort.DataReceived += Sp_DataReceived;
         }
 
+        public bool IsSerailPortOpen
+        {
+            get
+            {
+                return this.serialPort.IsOpen;
+            }
+        }
+
         public string GetFirstPortName()
         {
             string[] names = SerialPort.GetPortNames();
             if (names.Length > 0)
-                return names[0];
+            {
+                string setPort = Settings.Default.PortName;
+
+                if (!string.IsNullOrWhiteSpace(setPort) && names.Contains(setPort))
+                    return setPort;
+                else
+                    return names[0];
+            }
             else
                 return "COM?";
         }
@@ -42,10 +57,7 @@ namespace BarcodeDupChecker
             serialPort.DataBits = 8;
             serialPort.Handshake = Handshake.None;
             serialPort.RtsEnable = true;
-
         }
-
-
 
         public void SetBarcodeLength(int length)
         {

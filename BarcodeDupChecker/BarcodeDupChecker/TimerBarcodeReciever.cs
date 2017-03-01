@@ -9,23 +9,12 @@ namespace BarcodeDupChecker
 {
     public class TimerBarcodeReciever : IBarcodeReciever
     {
-        Timer t = new Timer(500);
+        const int interval = 1000;
+        Timer t = new Timer(interval);
         Random r = new Random();
-        int lstCount;
-        private List<string> lstBarcodes = new List<string>
-        {
-            "B111111111111",
-            "B222222222222",
-            "B333333333333",
-            "B444444444444",
-            "B555555555555",
-            "B666666666666",
-            "B777777777777",
-            "B888888888888"
-        };
+        private List<string> lstBarcodes = new List<string>();
         public TimerBarcodeReciever()
         {
-            this.lstCount = this.lstBarcodes.Count;
             t.Elapsed += T_Elapsed;
         }
 
@@ -33,7 +22,7 @@ namespace BarcodeDupChecker
         {
             if (this.BarcodeRecieved != null)
             {
-                string barcode = this.lstBarcodes[r.Next(0, lstCount - 1)];
+                string barcode = "BBBBBBB" + r.Next(0, 10000).ToString().PadLeft(5, '0');
                 this.BarcodeRecieved(this, barcode);
             }
         }

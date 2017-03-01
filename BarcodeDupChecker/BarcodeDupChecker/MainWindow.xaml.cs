@@ -32,16 +32,13 @@ namespace BarcodeDupChecker
         {
         }
 
-        //private delegate void NoArgDelegate();
-
-        //public static void Refresh(DependencyObject obj)
-
-        //{
-
-        //    obj.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle,
-
-        //        (NoArgDelegate)delegate { });
-
-        //}
+        private void lstIndexes_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems != null && e.AddedItems.Count > 0)
+            {
+                int index = (int)e.AddedItems[0];
+                this.lstAll.ScrollIntoView(this.lstAll.Items[index - 1]);
+            }
+        }
     }
 }

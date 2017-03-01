@@ -118,6 +118,23 @@ namespace BarcodeDupChecker.ViewModel
         }
 
 
+        private DupBarcodeViewModel selectedObsDupBarcode;
+        public DupBarcodeViewModel SelectedObsDupBarcode
+        {
+            get
+            {
+                return this.selectedObsDupBarcode;
+            }
+            set
+            {
+                if (this.selectedObsDupBarcode != value)
+                {
+                    this.selectedObsDupBarcode = value;
+                    this.RaisePropertyChanged(() => this.SelectedObsDupBarcode);
+                }
+            }
+        }
+
 
         private bool isOpening;
         private RelayCommand openCommand;

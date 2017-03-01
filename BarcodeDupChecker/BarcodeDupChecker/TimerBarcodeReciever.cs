@@ -11,6 +11,7 @@ namespace BarcodeDupChecker
     {
         const int interval = 300;
         Timer t = new Timer(interval);
+        int randUBound = (int)Math.Floor((2000d / (double)interval));
         Random r = new Random();
         private List<string> lstBarcodes = new List<string>();
         public TimerBarcodeReciever()
@@ -22,7 +23,7 @@ namespace BarcodeDupChecker
         {
             if (this.BarcodeRecieved != null)
             {
-                string barcode = "BBBBBBB" + r.Next(0, 10000).ToString().PadLeft(5, '0');
+                string barcode = "BBBBBBB" + r.Next(0, randUBound).ToString().PadLeft(5, '0');
                 this.BarcodeRecieved(this, barcode);
             }
         }

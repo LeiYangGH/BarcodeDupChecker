@@ -364,9 +364,10 @@ namespace BarcodeDupChecker.ViewModel
             Stopwatch sw = new Stopwatch();
             sw.Start();
             Random r = new Random();
-            for (int i = 1; i <= 10000; i++)
+            int num = 100;
+            for (int i = 1; i <= num; i++)
             {
-                string barcode = "BBBBBBB" + r.Next(0, 10000).ToString().PadLeft(5, '0');
+                string barcode = "BBBBBBB" + r.Next(0, num).ToString().PadLeft(5, '0');
                 this.obsAllBarcodes.Add(new AllBarcodeViewModel(barcode, i));
 
                 //this.GotBarcode(barcode);
@@ -401,40 +402,44 @@ namespace BarcodeDupChecker.ViewModel
 
         private void GotBarcode(string barcode)
         {
-            if (App.Current != null)//walkaround
-                App.Current.Dispatcher.Invoke(() =>
+            //if (App.Current != null)//walkaround
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                int oldCount = this.ObsAllBarcodes.Count;
+                bool hasDup = false;
+                DupBarcodeViewModel dupVM = null;
+                for (int a = 0; a < oldCount; a++)
                 {
-                    int oldCount = this.ObsAllBarcodes.Count;
-                    bool hasDup = false;
-                    DupBarcodeViewModel dupVM = null;
-                    for (int a = 0; a < oldCount; a++)
+                    AllBarcodeViewModel aVM = this.ObsAllBarcodes[a];
+                    if (aVM.Barcode == barcode)
                     {
-                        AllBarcodeViewModel aVM = this.ObsAllBarcodes[a];
-                        if (aVM.Barcode == barcode)
+                        hasDup = true;
+                        aVM.HasDup = true;
+                        Log.Instance.Logger.InfoFormat("Dup={0}", barcode);
+                        dupVM = this.ObsDupBarcodes.FirstOrDefault(x => x.Barcode == barcode);
+                        if (dupVM == null)
                         {
-                            hasDup = true;
-                            aVM.HasDup = true;
-                            Log.Instance.Logger.InfoFormat("Dup={0}", barcode);
-                            dupVM = this.ObsDupBarcodes.FirstOrDefault(x => x.Barcode == barcode);
-                            if (dupVM == null)
-                            {
-                                dupVM = new DupBarcodeViewModel(barcode);
-                                dupVM.AddDupIndex(a + 1);
-                                this.ObsDupBarcodes.Add(dupVM);
-                            }
-                            break;
+                            dupVM = new DupBarcodeViewModel(barcode);
+                            dupVM.AddDupIndex(a + 1);
+                            this.ObsDupBarcodes.Add(dupVM);
                         }
+                        break;
                     }
-                    AllBarcodeViewModel newAllVM = new AllBarcodeViewModel(barcode, oldCount + 1);
-                    this.ObsAllBarcodes.Add(newAllVM);
-                    if (hasDup)
-                    {
-                        newAllVM.HasDup = true;
-                        dupVM.AddDupIndex(oldCount + 1);
-                    }
-                });
+                }
+                AllBarcodeViewModel newAllVM = new AllBarcodeViewModel(barcode, oldCount + 1);
+                this.ObsAllBarcodes.Add(newAllVM);
+                if (hasDup)
+                {
+                    newAllVM.HasDup = true;
+                    dupVM.AddDupIndex(oldCount + 1);
+                }
+            });
         }
 
+        public void CloseBarcodeReciever()
+        {
+            this.barReciever.Close();
+        }
         public override void Cleanup()
         {
             this.barReciever.Close();

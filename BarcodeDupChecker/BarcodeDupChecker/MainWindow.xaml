@@ -8,6 +8,7 @@
         xmlns:cvt="clr-namespace:BarcodeDupChecker.Converters"
         mc:Ignorable="d"
         DataContext="{Binding Main, Source={StaticResource Locator}}"
+        Closing="Window_Closing"
         Unloaded="Window_Loaded"
         WindowStartupLocation="CenterScreen"
         Title="MainWindow" Height="350" Width="525">
@@ -33,7 +34,7 @@
             <MenuItem Header="{Binding PortName,Mode=OneWay}" Focusable="False"></MenuItem>
             <MenuItem Header="运行" Command="{Binding OpenCommand}" IsEnabled="{Binding IsOpened, Converter={StaticResource InvBool},Mode=OneWay}"></MenuItem>
             <MenuItem Header="停止" Command="{Binding CloseCommand}" IsEnabled="{Binding IsOpened, Mode=OneWay}"></MenuItem>
-            <MenuItem Header="测试增加1万个" Command="{Binding Add10KCommand}"></MenuItem>
+            <MenuItem Header="测试增加100个" Command="{Binding Add10KCommand}"></MenuItem>
             <MenuItem Header="设置" Command="{Binding SetCommand}"></MenuItem>
             <MenuItem Header="导出" Command="{Binding ExportCommand}"></MenuItem>
         </Menu>
@@ -78,6 +79,10 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <ListBox Name="lstIndexes" Grid.Row="2" Grid.Column="2" 
+                 Margin="3,0"
+                 MinWidth="30"
+                 HorizontalContentAlignment="Center"
+                 FontSize="18"
                  IsEnabled="{Binding IsOpened, Converter={StaticResource InvBool},Mode=OneWay}"
                  SelectionMode="Single"
                  ItemsSource="{Binding SelectedObsDupBarcode.ObsDupIndexes,Mode=OneWay}"

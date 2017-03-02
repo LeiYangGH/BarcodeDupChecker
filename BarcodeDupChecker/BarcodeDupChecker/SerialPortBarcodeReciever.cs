@@ -10,19 +10,22 @@ namespace BarcodeDupChecker
     public class SerialPortBarcodeReciever : IBarcodeReciever
     {
         int barcodeLength = 12;
-        SerialPort serialPort = new SerialPort();
+        PInvokeSerialPort.SerialPort serialPort;// = new PInvokeSerialPort.SerialPort();
 
         public SerialPortBarcodeReciever()
         {
+            this.serialPort = new PInvokeSerialPort.SerialPort(this.GetFirstPortName());
             this.SetSerialPortParameters("");
-            this.serialPort.DataReceived += Sp_DataReceived;
+            this.serialPort.DataReceived += SerialPort_DataReceived;
         }
+
+
 
         public bool IsSerailPortOpen
         {
             get
             {
-                return this.serialPort.IsOpen;
+                return this.serialPort.Online;//??
             }
         }
 
@@ -44,19 +47,19 @@ namespace BarcodeDupChecker
 
         public void SetSerialPortParameters(string portName)
         {
-            if (string.IsNullOrWhiteSpace(portName))
-            {
-                portName = this.GetFirstPortName();
-            }
+            //if (string.IsNullOrWhiteSpace(portName))
+            //{
+            //    portName = this.GetFirstPortName();
+            //}
             Log.Instance.Logger.InfoFormat("portName={0}", portName);
 
             this.serialPort.PortName = portName;
             serialPort.BaudRate = 9600;
-            serialPort.Parity = Parity.None;
-            serialPort.StopBits = StopBits.One;
-            serialPort.DataBits = 8;
-            serialPort.Handshake = Handshake.None;
-            serialPort.RtsEnable = true;
+            //serialPort.Parity = PInvokeSerialPort.Parity.None;
+            //serialPort.StopBits = PInvokeSerialPort.StopBits.One;
+            //serialPort.DataBits = 8;
+            //serialPort.Handshake = PInvokeSerialPort.Handshake.None;
+            //serialPort.RtsEnable = true;
         }
 
         public void SetBarcodeLength(int length)
@@ -64,25 +67,25 @@ namespace BarcodeDupChecker
             this.barcodeLength = length;
         }
 
-        string full = "";
-        private void Sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        static StringBuilder sb = new StringBuilder();
+        private void SerialPort_DataReceived(byte b)
         {
-            string barcode = this.serialPort.ReadExisting();
-            full += barcode;
-            if (full.Length >= barcodeLength)
+            if (b == 13)
             {
                 if (this.BarcodeRecieved != null)
                 {
-                    this.BarcodeRecieved(this, full);
-                    full = "";
+                    this.BarcodeRecieved(this, sb.ToString());
+                    sb.Clear();
                 }
+                Console.WriteLine();
+
             }
             else
             {
-                Log.Instance.Logger.InfoFormat("{0} < {1}", barcode, barcodeLength);
+                sb.Append((char)b);
             }
-
         }
+
 
         public void Close()
         {

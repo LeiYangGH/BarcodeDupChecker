@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BarcodeDupChecker", "Barcod
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSerialPort", "TestSerialPort\TestSerialPort.csproj", "{AF2FB524-CE6C-44AE-9B31-259FDD1779B1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SPInvoke", "SPInvoke\SPInvoke.csproj", "{59F443CD-B340-4E9A-91BD-C65A64FDB10A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SPStream", "SPStream\SPStream.csproj", "{09981B17-5AA4-42AE-B5E6-C3BA05532EE0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{AF2FB524-CE6C-44AE-9B31-259FDD1779B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF2FB524-CE6C-44AE-9B31-259FDD1779B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF2FB524-CE6C-44AE-9B31-259FDD1779B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59F443CD-B340-4E9A-91BD-C65A64FDB10A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59F443CD-B340-4E9A-91BD-C65A64FDB10A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59F443CD-B340-4E9A-91BD-C65A64FDB10A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59F443CD-B340-4E9A-91BD-C65A64FDB10A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09981B17-5AA4-42AE-B5E6-C3BA05532EE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09981B17-5AA4-42AE-B5E6-C3BA05532EE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09981B17-5AA4-42AE-B5E6-C3BA05532EE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09981B17-5AA4-42AE-B5E6-C3BA05532EE0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

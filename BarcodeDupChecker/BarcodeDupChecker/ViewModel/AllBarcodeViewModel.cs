@@ -64,7 +64,6 @@ namespace BarcodeDupChecker.ViewModel
                     this.hasDup = value;
                     this.RaisePropertyChanged(() => this.HasDup);
                 }
-
             }
         }
     }

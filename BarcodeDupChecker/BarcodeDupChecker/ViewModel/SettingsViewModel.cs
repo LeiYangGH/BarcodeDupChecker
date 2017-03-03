@@ -11,7 +11,6 @@ namespace BarcodeDupChecker.ViewModel
 {
     public class SettingsViewModel : ViewModelBase
     {
-
         public SettingsViewModel()
         {
             this.ObsSerialPortNames = new ObservableCollection<string>(SerialPort.GetPortNames());

@@ -25,63 +25,50 @@ namespace BarcodeDupChecker.ViewModel
         {
             this.ObsAllBarcodes = new ObservableCollection<AllBarcodeViewModel>();
             this.ObsDupBarcodes = new ObservableCollection<DupBarcodeViewModel>();
-            this.IsOpened = false;
-
 #if SerialPort
-            this.PortName = this.barReciever.GetFirstPortName();
+            this.PortName = this.GetFirstPortName();
 #else
             this.PortName = "Timer";
 #endif
-            //MessengerInstance.Register<MainWindow>(this, (p) =>
-            //{
-            //    this.barReciever.Close();
-            //});
             if (IsInDesignMode)
             {
-                //this.obsAllBarcodes = new ObservableCollection<string>() { "a", "bb", "a", "bb", "ccc" };
-                //this.ObsDupBarcodes = new ObservableCollection<string>() { "a", "bb" };
+
             }
             else
             {
                 barReciever.BarcodeRecieved += BarReciever_BarcodeRecieved;
-
+                MessengerInstance.Register<string>(this, (msg) =>
+                {
+                    this.Message = msg;
+                });
             }
         }
 
-        private string portName;
         public string PortName
         {
             get
             {
-                return this.portName;
+                return this.barReciever.PortName;
             }
             set
             {
-                if (this.portName != value)
+                if (this.barReciever.PortName != value)
                 {
-                    this.portName = value;
+                    this.barReciever.PortName = value;
                     this.RaisePropertyChanged(() => this.PortName);
                 }
             }
         }
 
-        private bool isOpened;
         public bool IsOpened
         {
             get
             {
-                return this.isOpened;
+                return this.barReciever.Online;
             }
-            set
-            {
-                if (this.isOpened != value)
-                {
-                    this.isOpened = value;
-                    this.RaisePropertyChanged(() => this.IsOpened);
-                }
 
-            }
         }
+
 
         private ObservableCollection<AllBarcodeViewModel> obsAllBarcodes;
         public ObservableCollection<AllBarcodeViewModel> ObsAllBarcodes
@@ -136,6 +123,24 @@ namespace BarcodeDupChecker.ViewModel
         }
 
 
+        private string message;
+        public string Message
+        {
+            get
+            {
+                return this.message;
+            }
+            set
+            {
+                if (this.message != value)
+                {
+                    this.message = value;
+                    this.RaisePropertyChanged(() => this.Message);
+                }
+            }
+        }
+
+
         private bool isOpening;
         private RelayCommand openCommand;
 
@@ -167,10 +172,10 @@ namespace BarcodeDupChecker.ViewModel
         {
             this.barReciever.Start();
 #if SerialPort
-            this.IsOpened = this.barReciever.IsSerailPortOpen;
 #else
             this.IsOpened = true;
 #endif
+            this.RaisePropertyChanged(() => this.IsOpened);
             if (this.IsOpened)
             {
                 Settings.Default.PortName = this.PortName;
@@ -210,10 +215,11 @@ namespace BarcodeDupChecker.ViewModel
         {
             this.barReciever.Close();
 #if SerialPort
-            this.IsOpened = this.barReciever.IsSerailPortOpen;
 #else
             this.IsOpened = false;
 #endif
+            this.RaisePropertyChanged(() => this.IsOpened);
+
         }
 
 
@@ -246,8 +252,8 @@ namespace BarcodeDupChecker.ViewModel
         }
         private async Task Set()
         {
+            Log.Instance.Logger.Info("settings");
             this.barReciever.Close();
-            this.IsOpened = false;
 
             SettingWindow setWin = new SettingWindow();
             SettingsViewModel setVM = (setWin.DataContext) as SettingsViewModel;
@@ -255,8 +261,10 @@ namespace BarcodeDupChecker.ViewModel
             if (setWin.ShowDialog() ?? false)
             {
 #if SerialPort
+                //if()
                 this.PortName = setVM.SelectedPortName;
-                this.barReciever.SetSerialPortParameters(this.PortName);
+                this.RaisePropertyChanged(() => this.IsOpened);
+
 #else
 
 #endif
@@ -308,11 +316,13 @@ namespace BarcodeDupChecker.ViewModel
                         sw.Write("\r\n");
                     }
                 Log.Instance.Logger.Info(fileName);
+                this.Message = fileName;
                 return true;
             }
             catch (Exception ex)
             {
                 Log.Instance.Logger.Error(ex.Message);
+                this.Message = ex.Message;
                 return false;
             }
         }
@@ -348,7 +358,7 @@ namespace BarcodeDupChecker.ViewModel
                         isAdd10King = true;
                         Add10KCommand.RaiseCanExecuteChanged();
 
-                        await Add10K();
+                        await ImportBarcodesFromFile();
 
                         isAdd10King = false;
                         Add10KCommand.RaiseCanExecuteChanged();
@@ -357,42 +367,23 @@ namespace BarcodeDupChecker.ViewModel
             }
         }
 
-
-        private async Task Add10K()
+        private async Task ImportBarcodesFromFile()//open
         {
             this.barReciever.Close();
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            Random r = new Random();
-            int num = 100;
-            for (int i = 1; i <= num; i++)
+            this.ObsDupBarcodes.Clear();
+            this.ObsAllBarcodes.Clear();
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "Text (*.txt)|*.txt";
+            if (dlg.ShowDialog() ?? false)
             {
-                string barcode = "BBBBBBB" + r.Next(0, num).ToString().PadLeft(5, '0');
-                this.obsAllBarcodes.Add(new AllBarcodeViewModel(barcode, i));
-
-                //this.GotBarcode(barcode);
-            }
-            var dupBarcodes = this.obsAllBarcodes.GroupBy(x => x.Barcode).Where(g => g.Count() > 1)
-    .Select(g => g.Key).Distinct();
-            foreach (var bar in dupBarcodes)
-            {
-                this.obsDupBarcodes.Add(new DupBarcodeViewModel(bar));
-            }
-            for (int a = 0; a < this.obsAllBarcodes.Count; a++)
-            {
-                var Abar = this.obsAllBarcodes[a];
-                string barcode = Abar.Barcode;
-                if (dupBarcodes.Any(x => x == barcode))
+                this.Message = "开始导入" + dlg.FileName;
+                string fileName = dlg.FileName;
+                foreach (string line in File.ReadLines(fileName))
                 {
-                    Abar.HasDup = true;
-                    var dupBar = this.obsDupBarcodes.First(x => x.Barcode == barcode);
-                    dupBar.AddDupIndex(a + 1);
+                    this.GotBarcode(line.Replace("\r", "").Replace("\n", ""));
                 }
+                this.Message = "结束导入" + dlg.FileName;
             }
-            this.RaisePropertyChanged(() => this.ObsAllBarcodes);
-            this.RaisePropertyChanged(() => this.ObsDupBarcodes);
-            sw.Stop();
-            Console.WriteLine(sw.ElapsedMilliseconds);
         }
 
         private void BarReciever_BarcodeRecieved(object sender, string e)
@@ -436,10 +427,23 @@ namespace BarcodeDupChecker.ViewModel
             });
         }
 
-        public void CloseBarcodeReciever()
+        private string GetFirstPortName()
         {
-            this.barReciever.Close();
+            string[] names = SerialPort.GetPortNames();
+            if (names.Length > 0)
+            {
+                string setPort = Settings.Default.PortName;
+
+                if (!string.IsNullOrWhiteSpace(setPort) && names.Contains(setPort))
+                    return setPort;
+                else
+                    return names[0];
+            }
+            else
+                return "COM?";
         }
+
+
         public override void Cleanup()
         {
             this.barReciever.Close();

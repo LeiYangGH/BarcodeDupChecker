@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using GalaSoft.MvvmLight;
 using BarcodeDupChecker.ViewModel;
+using System.Diagnostics;
 
 namespace BarcodeDupChecker
 {
@@ -29,7 +30,6 @@ namespace BarcodeDupChecker
             InitializeComponent();
             this.mainVM = this.DataContext as MainViewModel;
             this.ShowVersion();
-            //this.repository.CreateSqliteDb();
             Log.Instance.Logger.Info("\r\nUI started!");
         }
 
@@ -60,7 +60,9 @@ namespace BarcodeDupChecker
             if (this.mainVM.ObsAllBarcodes.Count > 0)
             {
                 if (MessageBox.Show("真的要关闭吗?显示的数据会丢失", "关闭程序", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
-                    this.mainVM.CloseBarcodeReciever();
+                {
+                    Log.Instance.Logger.InfoFormat("UI closed!\r\n\r\n");
+                }
                 else
                     e.Cancel = true;
             }

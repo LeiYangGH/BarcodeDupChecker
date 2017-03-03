@@ -11,6 +11,7 @@
         Closing="Window_Closing"
         Unloaded="Window_Loaded"
         WindowStartupLocation="CenterScreen"
+        Topmost="False"
         Title="MainWindow" Height="350" Width="525">
     <Window.Resources>
         <Style TargetType="TextBlock" x:Key="BarcodeStyle">
@@ -24,6 +25,7 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition />
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -34,13 +36,14 @@
             <MenuItem Header="{Binding PortName,Mode=OneWay}" Focusable="False"></MenuItem>
             <MenuItem Header="运行" Command="{Binding OpenCommand}" IsEnabled="{Binding IsOpened, Converter={StaticResource InvBool},Mode=OneWay}"></MenuItem>
             <MenuItem Header="停止" Command="{Binding CloseCommand}" IsEnabled="{Binding IsOpened, Mode=OneWay}"></MenuItem>
-            <MenuItem Header="测试增加100个" Command="{Binding Add10KCommand}"></MenuItem>
+            <!--<MenuItem Header="测试增加100个" Visibility="Collapsed" Command="{Binding Add10KCommand}"></MenuItem>-->
+            <MenuItem Header="从文件导入条码"   Command="{Binding Add10KCommand}"></MenuItem>
             <MenuItem Header="设置" Command="{Binding SetCommand}"></MenuItem>
             <MenuItem Header="导出" Command="{Binding ExportCommand}"></MenuItem>
         </Menu>
         <TextBlock Style="{StaticResource BarcodeStyle}" HorizontalAlignment="Center" Text="{Binding ObsAllBarcodes.Count,Mode=OneWay}" Grid.Row="1" Grid.Column="0"/>
         <TextBlock Style="{StaticResource BarcodeStyle}" HorizontalAlignment="Center" Text="{Binding ObsDupBarcodes.Count,Mode=OneWay}"  Grid.Row="1" Grid.Column="1"/>
-        <ListBox Name="lstAll"  Grid.Row="2" Grid.Column="0" 
+        <ListBox Name="lstAll" Margin="2,1" Grid.Row="2" Grid.Column="0" 
                  ItemsSource="{Binding ObsAllBarcodes,Mode=OneWay,IsAsync=True}" 
                  local:ListBoxBehavior.ScrollOnNewItem="True"
                  VirtualizingPanel.IsVirtualizing="true"
@@ -59,7 +62,7 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <ListBox  Grid.Row="2" Grid.Column="1" 
+        <ListBox  Grid.Row="2" Grid.Column="1" Margin="2,1"
                  ItemsSource="{Binding ObsDupBarcodes,Mode=OneWay,IsAsync=True}" 
                   SelectedItem="{Binding SelectedObsDupBarcode,Mode=OneWayToSource}"
                   local:ListBoxBehavior.ScrollOnNewItem="True"
@@ -79,7 +82,7 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <ListBox Name="lstIndexes" Grid.Row="2" Grid.Column="2" 
-                 Margin="3,0"
+                 Margin="2,0"
                  MinWidth="30"
                  HorizontalContentAlignment="Center"
                  FontSize="18"
@@ -88,5 +91,7 @@
                  ItemsSource="{Binding SelectedObsDupBarcode.ObsDupIndexes,Mode=OneWay}"
                  SelectionChanged="lstIndexes_SelectionChanged">
         </ListBox>
+        <TextBox  Grid.Row="3" Grid.ColumnSpan="3" IsReadOnly="True" HorizontalAlignment="Stretch"
+                  Text="{Binding Message,Mode=OneWay}"></TextBox>
     </Grid>
 </Window>

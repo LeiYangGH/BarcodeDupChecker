@@ -6,7 +6,7 @@
 }
 $zipdir ='C:\G\BarcodeDupChecker\Releases\BarcodeDupChecker' + [DateTime]::Now.ToString("yyyyMMddHHmm") 
 $zipdir 
-$debugdir = 'C:\G\BarcodeDupChecker\BarcodeDupChecker\BarcodeDupChecker\bin\Debug'
+$debugdir = 'C:\G\BarcodeDupChecker\BarcodeDupChecker\BarcodeDupChecker\bin\x86\Release'
 New-Item -ItemType Directory -Force -Path $zipdir
 $exclude = @('*.pdb','*.xml','*vshost*','*.log')
 Copy-Item "$debugdir\*" $zipdir -Recurse -Exclude $exclude -Force

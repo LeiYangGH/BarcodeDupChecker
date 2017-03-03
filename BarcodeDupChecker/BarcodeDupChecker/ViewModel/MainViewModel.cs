@@ -12,7 +12,7 @@ using System.Diagnostics;
 
 namespace BarcodeDupChecker.ViewModel
 {
-    public class MainViewModel : ViewModelBase
+    public class MainViewModel : ViewModelBase, IDisposable
     {
 #if SerialPort
         private SerialPortBarcodeReciever barReciever = new SerialPortBarcodeReciever();
@@ -386,9 +386,9 @@ namespace BarcodeDupChecker.ViewModel
             }
         }
 
-        private void BarReciever_BarcodeRecieved(object sender, string e)
+        private void BarReciever_BarcodeRecieved(object sender, BarcodeEventArgs e)
         {
-            this.GotBarcode(e);
+            this.GotBarcode(e.Barcode);
         }
 
         private void GotBarcode(string barcode)
@@ -448,6 +448,20 @@ namespace BarcodeDupChecker.ViewModel
         {
             this.barReciever.Close();
             base.Cleanup();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.barReciever.Dispose();
+            }
+        }
+        public void Dispose()
+        {
+
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

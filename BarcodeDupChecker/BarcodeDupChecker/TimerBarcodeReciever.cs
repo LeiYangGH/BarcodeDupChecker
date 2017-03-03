@@ -7,7 +7,7 @@ using System.Timers;
 
 namespace BarcodeDupChecker
 {
-    public class TimerBarcodeReciever : IBarcodeReciever
+    public class TimerBarcodeReciever : IBarcodeReciever, IDisposable
     {
         const int interval = 300;
         Timer t = new Timer(interval);
@@ -24,7 +24,7 @@ namespace BarcodeDupChecker
             if (this.BarcodeRecieved != null)
             {
                 string barcode = "BBBBBBB" + r.Next(0, randUBound).ToString().PadLeft(5, '0');
-                this.BarcodeRecieved(this, barcode);
+                this.BarcodeRecieved(this, new BarcodeEventArgs(barcode));
             }
         }
 
@@ -38,6 +38,20 @@ namespace BarcodeDupChecker
             t.Start();
         }
 
-        public event EventHandler<string> BarcodeRecieved;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.t.Dispose();
+            }
+        }
+        public void Dispose()
+        {
+
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public event EventHandler<BarcodeEventArgs> BarcodeRecieved;
     }
 }

@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace BarcodeDupChecker.ViewModel
 {
-    public class SerialPortBarcodeReciever : ViewModelBase, IBarcodeReciever
+    public class SerialPortBarcodeReciever : ViewModelBase, IBarcodeReciever, IDisposable
     {
         PInvokeSerialPort.SerialPort serialPort;
 
         public SerialPortBarcodeReciever()
         {
-            this.serialPort = new PInvokeSerialPort.SerialPort("COM?");
+            this.serialPort = new PInvokeSerialPort.SerialPort("COM?",9600);
             this.serialPort.DataReceived += SerialPort_DataReceived;
         }
 
@@ -44,7 +44,7 @@ namespace BarcodeDupChecker.ViewModel
             {
                 if (this.BarcodeRecieved != null)
                 {
-                    this.BarcodeRecieved(this, sb.ToString());
+                    this.BarcodeRecieved(this, new BarcodeEventArgs(sb.ToString()));
                     sb.Clear();
                 }
             }
@@ -86,7 +86,21 @@ namespace BarcodeDupChecker.ViewModel
             }
         }
 
-        public event EventHandler<string> BarcodeRecieved;
+        public event EventHandler<BarcodeEventArgs> BarcodeRecieved;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.serialPort.Dispose();
+            }
+        }
+        public void Dispose()
+        {
+
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 }
 

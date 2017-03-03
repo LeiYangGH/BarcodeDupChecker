@@ -8,7 +8,7 @@ namespace SPInvoke
 {
     class Program
     {
-        const string portName = "COM1";
+        const string portName = "COM4";
 
         static SerialPort serialPort;
         static void Main(string[] args)

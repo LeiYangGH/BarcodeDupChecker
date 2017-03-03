@@ -34,10 +34,19 @@ namespace BarcodeDupChecker
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (incc != null)
+                    incc.CollectionChanged -= incc_CollectionChanged;
+            }
+        }
         public void Dispose()
         {
-            if (incc != null)
-                incc.CollectionChanged -= incc_CollectionChanged;
+
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

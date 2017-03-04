@@ -32,8 +32,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="PInvokeSerialPort, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <HintPath>..\packages\PInvokeSerialPort.1.0.0\lib\PInvokeSerialPort.dll</HintPath>
+    <Reference Include="PInvokeSerialPort, Version=1.0.1.0, Culture=neutral, processorArchitecture=x86">
+      <HintPath>..\packages\PInvokeSerialPort.1.0.1\lib\PInvokeSerialPort.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />

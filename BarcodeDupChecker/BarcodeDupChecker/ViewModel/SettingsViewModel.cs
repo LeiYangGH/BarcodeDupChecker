@@ -49,5 +49,22 @@ namespace BarcodeDupChecker.ViewModel
                 }
             }
         }
+
+        private bool usePInvokeReader;
+        public bool UsePInvokeReader
+        {
+            get
+            {
+                return this.usePInvokeReader;
+            }
+            set
+            {
+                if (this.usePInvokeReader != value)
+                {
+                    this.usePInvokeReader = value;
+                    this.RaisePropertyChanged(() => this.UsePInvokeReader);
+                }
+            }
+        }
     }
 }

@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace BarcodeDupChecker
 {
-    public interface IBarcodeReciever
+    public interface IBarcodeReciever : IDisposable
     {
         event EventHandler<BarcodeEventArgs> BarcodeRecieved;
+        string PortName { get; set; }
+        bool Online { get; }
         void Start();
         void Close();
     }

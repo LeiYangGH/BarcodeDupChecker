@@ -9,13 +9,14 @@ using Microsoft.Win32;
 using System.IO;
 using BarcodeDupChecker.Properties;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 
 namespace BarcodeDupChecker.ViewModel
 {
     public class MainViewModel : ViewModelBase, IDisposable
     {
 #if SerialPort
-        private SerialPortBarcodeReciever barReciever = new SerialPortBarcodeReciever();
+        private IBarcodeReciever barReciever;
 #else
         private IBarcodeReciever barReciever = new TimerBarcodeReciever();
 #endif
@@ -23,24 +24,39 @@ namespace BarcodeDupChecker.ViewModel
 
         public MainViewModel()
         {
+            this.UsePInvokeReader = true;
+            this.CreateBarcodeReciever();
+            this.PortName = this.GetFirstPortName();
             this.ObsAllBarcodes = new ObservableCollection<AllBarcodeViewModel>();
             this.ObsDupBarcodes = new ObservableCollection<DupBarcodeViewModel>();
-#if SerialPort
-            this.PortName = this.GetFirstPortName();
-#else
-            this.PortName = "Timer";
-#endif
+
             if (IsInDesignMode)
             {
 
             }
             else
             {
-                barReciever.BarcodeRecieved += BarReciever_BarcodeRecieved;
                 MessengerInstance.Register<string>(this, (msg) =>
                 {
                     this.Message = msg;
                 });
+            }
+        }
+
+        private bool usePInvokeReader;
+        public bool UsePInvokeReader
+        {
+            get
+            {
+                return this.usePInvokeReader;
+            }
+            set
+            {
+                if (this.usePInvokeReader != value)
+                {
+                    this.usePInvokeReader = value;
+                    this.RaisePropertyChanged(() => this.UsePInvokeReader);
+                }
             }
         }
 
@@ -171,10 +187,6 @@ namespace BarcodeDupChecker.ViewModel
         private async Task Open()
         {
             this.barReciever.Start();
-#if SerialPort
-#else
-            this.IsOpened = true;
-#endif
             this.RaisePropertyChanged(() => this.IsOpened);
             if (this.IsOpened)
             {
@@ -211,15 +223,11 @@ namespace BarcodeDupChecker.ViewModel
                     () => !isCloseing));
             }
         }
+        [HandleProcessCorruptedStateExceptions]
         private async Task Close()
         {
             this.barReciever.Close();
-#if SerialPort
-#else
-            this.IsOpened = false;
-#endif
             this.RaisePropertyChanged(() => this.IsOpened);
-
         }
 
 
@@ -253,21 +261,23 @@ namespace BarcodeDupChecker.ViewModel
         private async Task Set()
         {
             Log.Instance.Logger.Info("settings");
-            this.barReciever.Close();
 
             SettingWindow setWin = new SettingWindow();
             SettingsViewModel setVM = (setWin.DataContext) as SettingsViewModel;
             setVM.SelectedPortName = this.PortName;
+            setVM.UsePInvokeReader = this.UsePInvokeReader;
+
             if (setWin.ShowDialog() ?? false)
             {
-#if SerialPort
-                //if()
+
+                if (this.UsePInvokeReader != setVM.UsePInvokeReader)
+                {
+                    this.UsePInvokeReader = setVM.UsePInvokeReader;
+                    this.CreateBarcodeReciever();
+                    Log.Instance.Logger.InfoFormat("切换为读{0}串口", this.UsePInvokeReader ? "物理" : "虚拟");
+                }
                 this.PortName = setVM.SelectedPortName;
                 this.RaisePropertyChanged(() => this.IsOpened);
-
-#else
-
-#endif
             }
 
         }
@@ -329,7 +339,6 @@ namespace BarcodeDupChecker.ViewModel
 
         private async Task Export()
         {
-            this.barReciever.Close();
             SaveFileDialog dlg = new SaveFileDialog();
             dlg.Filter = "Text (*.txt)|*.txt";
             if (dlg.ShowDialog() ?? false)
@@ -369,7 +378,6 @@ namespace BarcodeDupChecker.ViewModel
 
         private async Task ImportBarcodesFromFile()//open
         {
-            this.barReciever.Close();
             this.ObsDupBarcodes.Clear();
             this.ObsAllBarcodes.Clear();
             OpenFileDialog dlg = new OpenFileDialog();
@@ -443,7 +451,19 @@ namespace BarcodeDupChecker.ViewModel
                 return "COM?";
         }
 
-
+        private void CreateBarcodeReciever()
+        {
+            if (this.barReciever != null)
+            {
+                this.barReciever.BarcodeRecieved -= BarReciever_BarcodeRecieved;
+                this.barReciever.Dispose();
+            }
+            if (this.UsePInvokeReader)
+                this.barReciever = new PInvokeSerialPortBarcodeReciever();
+            else
+                this.barReciever = new BuiltinSerialPortBarcodeReciever();
+            this.barReciever.BarcodeRecieved += BarReciever_BarcodeRecieved;
+        }
         public override void Cleanup()
         {
             this.barReciever.Close();

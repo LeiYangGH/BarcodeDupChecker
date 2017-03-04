@@ -14,6 +14,28 @@ namespace BarcodeDupChecker
         int randUBound = (int)Math.Floor((2000d / (double)interval));
         Random r = new Random();
         private List<string> lstBarcodes = new List<string>();
+
+        public string PortName
+        {
+            get
+            {
+                return "Timer";
+            }
+
+            set
+            {
+
+            }
+        }
+
+        public bool Online
+        {
+            get
+            {
+                return this.t.Enabled;
+            }
+        }
+
         public TimerBarcodeReciever()
         {
             t.Elapsed += T_Elapsed;

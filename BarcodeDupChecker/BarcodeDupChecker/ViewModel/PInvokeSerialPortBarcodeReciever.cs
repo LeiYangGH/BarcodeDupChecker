@@ -2,18 +2,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace BarcodeDupChecker.ViewModel
 {
-    public class SerialPortBarcodeReciever : ViewModelBase, IBarcodeReciever, IDisposable
+    public class PInvokeSerialPortBarcodeReciever : ViewModelBase, IBarcodeReciever, IDisposable
     {
         PInvokeSerialPort.SerialPort serialPort;
 
-        public SerialPortBarcodeReciever()
+        public PInvokeSerialPortBarcodeReciever()
         {
-            this.serialPort = new PInvokeSerialPort.SerialPort("COM?",9600);
+            this.serialPort = new PInvokeSerialPort.SerialPort("COM?", 9600);
             this.serialPort.DataReceived += SerialPort_DataReceived;
         }
 
@@ -56,6 +57,28 @@ namespace BarcodeDupChecker.ViewModel
         }
 
 
+        public void Start()
+        {
+            try
+            {
+                if (this.serialPort.Open())
+                {
+                    Log.Instance.Logger.InfoFormat("open {0} success", this.PortName);
+                    MessengerInstance.Send<string>(string.Format("成功打开串口{0}！", this.PortName));
+                }
+                else
+                {
+                    MessengerInstance.Send<string>(string.Format("打开串口{0}失败！", this.PortName));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Logger.FatalFormat(ex.Message);
+                MessengerInstance.Send<string>(ex.Message);
+            }
+        }
+
+        [HandleProcessCorruptedStateExceptions]
         public void Close()
         {
             try
@@ -71,20 +94,7 @@ namespace BarcodeDupChecker.ViewModel
             }
         }
 
-        public void Start()
-        {
-            try
-            {
-                this.serialPort.Open();
-                Log.Instance.Logger.InfoFormat("open {0} success", this.PortName);
-                MessengerInstance.Send<string>(string.Format("成功打开串口{0}！", this.PortName));
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Logger.FatalFormat(ex.Message);
-                MessengerInstance.Send<string>(ex.Message);
-            }
-        }
+
 
         public event EventHandler<BarcodeEventArgs> BarcodeRecieved;
 
@@ -92,6 +102,7 @@ namespace BarcodeDupChecker.ViewModel
         {
             if (disposing)
             {
+                this.serialPort.DataReceived -= SerialPort_DataReceived;
                 this.serialPort.Dispose();
             }
         }

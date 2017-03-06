@@ -24,9 +24,21 @@ namespace BarcodeDupChecker.ViewModel
 
         public MainViewModel()
         {
-            this.UsePInvokeReader = true;
+#if Test
+            this.UsePInvokeReader = false;
+
+#else
+            this.UsePInvokeReader = Settings.Default.UsePInvokeReader;
+#endif
             this.CreateBarcodeReciever();
+#if Test
+            this.PortName = "COM10";
+#else
             this.PortName = this.GetFirstPortName();
+#endif
+            this.BarcodeLength = Settings.Default.BarcodeLength;
+
+
             this.ObsAllBarcodes = new ObservableCollection<AllBarcodeViewModel>();
             this.ObsDupBarcodes = new ObservableCollection<DupBarcodeViewModel>();
 
@@ -55,7 +67,7 @@ namespace BarcodeDupChecker.ViewModel
                 if (this.usePInvokeReader != value)
                 {
                     this.usePInvokeReader = value;
-                    this.RaisePropertyChanged(() => this.UsePInvokeReader);
+                    this.RaisePropertyChanged(nameof(UsePInvokeReader));
                 }
             }
         }
@@ -71,7 +83,23 @@ namespace BarcodeDupChecker.ViewModel
                 if (this.barReciever.PortName != value)
                 {
                     this.barReciever.PortName = value;
-                    this.RaisePropertyChanged(() => this.PortName);
+                    this.RaisePropertyChanged(nameof(PortName));
+                }
+            }
+        }
+
+        public int BarcodeLength
+        {
+            get
+            {
+                return this.barReciever.BarcodeLength;
+            }
+            set
+            {
+                if (this.barReciever.BarcodeLength != value)
+                {
+                    this.barReciever.BarcodeLength = value;
+                    this.RaisePropertyChanged(nameof(BarcodeLength));
                 }
             }
         }
@@ -98,7 +126,7 @@ namespace BarcodeDupChecker.ViewModel
                 if (this.obsAllBarcodes != value)
                 {
                     this.obsAllBarcodes = value;
-                    this.RaisePropertyChanged(() => this.ObsAllBarcodes);
+                    this.RaisePropertyChanged(nameof(ObsAllBarcodes));
                 }
             }
         }
@@ -115,7 +143,7 @@ namespace BarcodeDupChecker.ViewModel
                 if (this.obsDupBarcodes != value)
                 {
                     this.obsDupBarcodes = value;
-                    this.RaisePropertyChanged(() => this.ObsDupBarcodes);
+                    this.RaisePropertyChanged(nameof(ObsDupBarcodes));
                 }
             }
         }
@@ -133,7 +161,7 @@ namespace BarcodeDupChecker.ViewModel
                 if (this.selectedObsDupBarcode != value)
                 {
                     this.selectedObsDupBarcode = value;
-                    this.RaisePropertyChanged(() => this.SelectedObsDupBarcode);
+                    this.RaisePropertyChanged(nameof(SelectedObsDupBarcode));
                 }
             }
         }
@@ -151,7 +179,7 @@ namespace BarcodeDupChecker.ViewModel
                 if (this.message != value)
                 {
                     this.message = value;
-                    this.RaisePropertyChanged(() => this.Message);
+                    this.RaisePropertyChanged(nameof(Message));
                 }
             }
         }
@@ -187,10 +215,12 @@ namespace BarcodeDupChecker.ViewModel
         private async Task Open()
         {
             this.barReciever.Start();
-            this.RaisePropertyChanged(() => this.IsOpened);
+            this.RaisePropertyChanged(nameof(IsOpened));
             if (this.IsOpened)
             {
                 Settings.Default.PortName = this.PortName;
+                Settings.Default.UsePInvokeReader = this.UsePInvokeReader;
+                Settings.Default.BarcodeLength = this.BarcodeLength;
                 Settings.Default.Save();
             }
 
@@ -227,7 +257,7 @@ namespace BarcodeDupChecker.ViewModel
         private async Task Close()
         {
             this.barReciever.Close();
-            this.RaisePropertyChanged(() => this.IsOpened);
+            this.RaisePropertyChanged(nameof(IsOpened));
         }
 
 
@@ -263,9 +293,11 @@ namespace BarcodeDupChecker.ViewModel
             Log.Instance.Logger.Info("settings");
 
             SettingWindow setWin = new SettingWindow();
+            setWin.Owner = MainWindow.Instance;
             SettingsViewModel setVM = (setWin.DataContext) as SettingsViewModel;
             setVM.SelectedPortName = this.PortName;
             setVM.UsePInvokeReader = this.UsePInvokeReader;
+            setVM.BarcodeLength = this.BarcodeLength;
 
             if (setWin.ShowDialog() ?? false)
             {
@@ -277,7 +309,8 @@ namespace BarcodeDupChecker.ViewModel
                     Log.Instance.Logger.InfoFormat("切换为读{0}串口", this.UsePInvokeReader ? "物理" : "虚拟");
                 }
                 this.PortName = setVM.SelectedPortName;
-                this.RaisePropertyChanged(() => this.IsOpened);
+                this.BarcodeLength = setVM.BarcodeLength;
+                this.RaisePropertyChanged(nameof(IsOpened));
             }
 
         }

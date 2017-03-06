@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BarcodeDupChecker.ViewModel
@@ -15,12 +16,16 @@ namespace BarcodeDupChecker.ViewModel
         public BuiltinSerialPortBarcodeReciever()
         {
             this.serialPort = new SerialPort("COM?", 9600);
+            //this.serialPort.NewLine = "\r\n";
+            this.serialPort.ReceivedBytesThreshold = 13;
+
             this.serialPort.DataReceived += SerialPort_DataReceived;
         }
 
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            string barcode = this.serialPort.ReadExisting();
+            string barcode = this.serialPort.ReadExisting().Replace("\r","").Replace("\n", "");
+            //string barcode = this.serialPort.();
             if (this.BarcodeRecieved != null)
             {
                 this.BarcodeRecieved(this, new BarcodeEventArgs(barcode));
@@ -47,6 +52,18 @@ namespace BarcodeDupChecker.ViewModel
             }
         }
 
+        public int BarcodeLength
+        {
+            get
+            {
+                return this.serialPort.ReceivedBytesThreshold;
+            }
+
+            set
+            {
+                this.serialPort.ReceivedBytesThreshold = value;
+            }
+        }
 
         public void Start()
         {
@@ -81,13 +98,17 @@ namespace BarcodeDupChecker.ViewModel
 
         public event EventHandler<BarcodeEventArgs> BarcodeRecieved;
 
+        bool disposed = false;
         protected virtual void Dispose(bool disposing)
         {
+            if (disposed)
+                return;
             if (disposing)
             {
                 this.serialPort.DataReceived -= SerialPort_DataReceived;
                 this.serialPort.Dispose();
             }
+            disposed = true;
         }
         public void Dispose()
         {

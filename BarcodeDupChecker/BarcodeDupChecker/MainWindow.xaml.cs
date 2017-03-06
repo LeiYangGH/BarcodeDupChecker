@@ -25,10 +25,12 @@ namespace BarcodeDupChecker
     {
         private SqliteRepository repository = SqliteRepository.Instance;
         private MainViewModel mainVM;
+        public static MainWindow Instance;
         public MainWindow()
         {
             InitializeComponent();
             this.mainVM = this.DataContext as MainViewModel;
+            MainWindow.Instance = this;
             this.ShowVersion();
             Log.Instance.Logger.Info("\r\nUI started!");
         }

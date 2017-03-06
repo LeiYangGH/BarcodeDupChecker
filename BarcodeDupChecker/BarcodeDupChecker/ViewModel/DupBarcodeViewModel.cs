@@ -28,7 +28,7 @@ namespace BarcodeDupChecker.ViewModel
                 if (this.barcode != value)
                 {
                     this.barcode = value;
-                    this.RaisePropertyChanged(() => this.Barcode);
+                    this.RaisePropertyChanged(nameof(Barcode));
                 }
             }
         }
@@ -45,7 +45,7 @@ namespace BarcodeDupChecker.ViewModel
                 if (this.obsDupIndexes != value)
                 {
                     this.obsDupIndexes = value;
-                    this.RaisePropertyChanged(() => this.ObsDupIndexes);
+                    this.RaisePropertyChanged(nameof(ObsDupIndexes));
                 }
             }
         }
@@ -61,7 +61,7 @@ namespace BarcodeDupChecker.ViewModel
         public void AddDupIndex(int index)
         {
             this.ObsDupIndexes.Add(index);
-            this.RaisePropertyChanged(() => this.IndexesTooltip);
+            this.RaisePropertyChanged(nameof(IndexesTooltip));
         }
     }
 }

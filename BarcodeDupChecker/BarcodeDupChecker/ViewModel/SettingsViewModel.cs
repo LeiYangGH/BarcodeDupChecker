@@ -28,10 +28,28 @@ namespace BarcodeDupChecker.ViewModel
                 if (this.selectedPortName != value)
                 {
                     this.selectedPortName = value;
-                    this.RaisePropertyChanged(() => this.SelectedPortName);
+                    this.RaisePropertyChanged(nameof(SelectedPortName));
                 }
             }
         }
+
+        private int barcodeLength;
+        public int BarcodeLength
+        {
+            get
+            {
+                return this.barcodeLength;
+            }
+            set
+            {
+                if (this.barcodeLength != value)
+                {
+                    this.barcodeLength = value;
+                    this.RaisePropertyChanged(nameof(BarcodeLength));
+                }
+            }
+        }
+
 
         private ObservableCollection<string> obsSerialPortNames;
         public ObservableCollection<string> ObsSerialPortNames
@@ -45,7 +63,7 @@ namespace BarcodeDupChecker.ViewModel
                 if (this.obsSerialPortNames != value)
                 {
                     this.obsSerialPortNames = value;
-                    this.RaisePropertyChanged(() => this.ObsSerialPortNames);
+                    this.RaisePropertyChanged(nameof(ObsSerialPortNames));
                 }
             }
         }
@@ -62,7 +80,7 @@ namespace BarcodeDupChecker.ViewModel
                 if (this.usePInvokeReader != value)
                 {
                     this.usePInvokeReader = value;
-                    this.RaisePropertyChanged(() => this.UsePInvokeReader);
+                    this.RaisePropertyChanged(nameof(UsePInvokeReader));
                 }
             }
         }

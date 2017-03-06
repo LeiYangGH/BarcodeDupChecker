@@ -38,21 +38,27 @@ namespace BarcodeDupChecker.ViewModel
             }
         }
 
-        static StringBuilder sb = new StringBuilder();
+        public int BarcodeLength
+        {
+            get; set;
+        }
+
+        private StringBuilder sb = new StringBuilder();
         private void SerialPort_DataReceived(byte b)
         {
-            if (b == 13 || b == 10 || b == 122)
+            //if (b == 13 || b == 10 || b == 122)
+            if (b == 13)
             {
                 if (this.BarcodeRecieved != null)
                 {
-                    this.BarcodeRecieved(this, new BarcodeEventArgs(sb.ToString()));
-                    sb.Clear();
+                    this.BarcodeRecieved(this, new BarcodeEventArgs(this.sb.ToString()));
+                    this.sb.Clear();
                 }
             }
             else
             {
-                sb.Append((char)b);
-                MessengerInstance.Send<string>(sb.ToString());
+                this.sb.Append((char)b);
+                MessengerInstance.Send<string>(this.sb.ToString());
             }
         }
 
@@ -83,6 +89,7 @@ namespace BarcodeDupChecker.ViewModel
         {
             try
             {
+                this.serialPort.DataReceived -= SerialPort_DataReceived;
                 this.serialPort.Close();
                 Log.Instance.Logger.InfoFormat("close {0} success", this.PortName);
                 MessengerInstance.Send<string>(string.Format("成功关闭串口{0}！", this.PortName));
@@ -98,13 +105,17 @@ namespace BarcodeDupChecker.ViewModel
 
         public event EventHandler<BarcodeEventArgs> BarcodeRecieved;
 
+        bool disposed = false;
         protected virtual void Dispose(bool disposing)
         {
+            if (disposed)
+                return;
             if (disposing)
             {
                 this.serialPort.DataReceived -= SerialPort_DataReceived;
                 this.serialPort.Dispose();
             }
+            disposed = true;
         }
         public void Dispose()
         {

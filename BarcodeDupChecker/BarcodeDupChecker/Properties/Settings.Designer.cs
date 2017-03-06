@@ -34,5 +34,29 @@ namespace BarcodeDupChecker.Properties {
                 this["PortName"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UsePInvokeReader {
+            get {
+                return ((bool)(this["UsePInvokeReader"]));
+            }
+            set {
+                this["UsePInvokeReader"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("13")]
+        public int BarcodeLength {
+            get {
+                return ((int)(this["BarcodeLength"]));
+            }
+            set {
+                this["BarcodeLength"] = value;
+            }
+        }
     }
 }

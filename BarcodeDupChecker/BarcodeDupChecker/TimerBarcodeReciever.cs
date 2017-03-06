@@ -36,6 +36,11 @@ namespace BarcodeDupChecker
             }
         }
 
+        public int BarcodeLength
+        {
+            get; set;
+        }
+
         public TimerBarcodeReciever()
         {
             t.Elapsed += T_Elapsed;

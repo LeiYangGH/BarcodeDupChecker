@@ -10,6 +10,7 @@ using System.IO;
 using BarcodeDupChecker.Properties;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
+using GalaSoft.MvvmLight.Threading;
 
 namespace BarcodeDupChecker.ViewModel
 {
@@ -36,7 +37,6 @@ namespace BarcodeDupChecker.ViewModel
 #else
             this.PortName = this.GetFirstPortName();
 #endif
-            this.BarcodeLength = Settings.Default.BarcodeLength;
 
 
             this.ObsAllBarcodes = new ObservableCollection<AllBarcodeViewModel>();
@@ -84,22 +84,6 @@ namespace BarcodeDupChecker.ViewModel
                 {
                     this.barReciever.PortName = value;
                     this.RaisePropertyChanged(nameof(PortName));
-                }
-            }
-        }
-
-        public int BarcodeLength
-        {
-            get
-            {
-                return this.barReciever.BarcodeLength;
-            }
-            set
-            {
-                if (this.barReciever.BarcodeLength != value)
-                {
-                    this.barReciever.BarcodeLength = value;
-                    this.RaisePropertyChanged(nameof(BarcodeLength));
                 }
             }
         }
@@ -220,7 +204,6 @@ namespace BarcodeDupChecker.ViewModel
             {
                 Settings.Default.PortName = this.PortName;
                 Settings.Default.UsePInvokeReader = this.UsePInvokeReader;
-                Settings.Default.BarcodeLength = this.BarcodeLength;
                 Settings.Default.Save();
             }
 
@@ -256,8 +239,12 @@ namespace BarcodeDupChecker.ViewModel
         [HandleProcessCorruptedStateExceptions]
         private async Task Close()
         {
-            this.barReciever.Close();
-            this.RaisePropertyChanged(nameof(IsOpened));
+            //DispatcherHelper.CheckBeginInvokeOnUI((Action)(delegate
+            App.Current.Dispatcher.BeginInvoke((Action)(delegate
+            {
+                this.barReciever.Close();
+                this.RaisePropertyChanged(nameof(IsOpened));
+            }));
         }
 
 
@@ -297,7 +284,6 @@ namespace BarcodeDupChecker.ViewModel
             SettingsViewModel setVM = (setWin.DataContext) as SettingsViewModel;
             setVM.SelectedPortName = this.PortName;
             setVM.UsePInvokeReader = this.UsePInvokeReader;
-            setVM.BarcodeLength = this.BarcodeLength;
 
             if (setWin.ShowDialog() ?? false)
             {
@@ -309,7 +295,6 @@ namespace BarcodeDupChecker.ViewModel
                     Log.Instance.Logger.InfoFormat("切换为读{0}串口", this.UsePInvokeReader ? "物理" : "虚拟");
                 }
                 this.PortName = setVM.SelectedPortName;
-                this.BarcodeLength = setVM.BarcodeLength;
                 this.RaisePropertyChanged(nameof(IsOpened));
             }
 
@@ -435,37 +420,39 @@ namespace BarcodeDupChecker.ViewModel
         private void GotBarcode(string barcode)
         {
             //if (App.Current != null)//walkaround
-            App.Current.Dispatcher.Invoke(() =>
-            {
-                int oldCount = this.ObsAllBarcodes.Count;
-                bool hasDup = false;
-                DupBarcodeViewModel dupVM = null;
-                for (int a = 0; a < oldCount; a++)
-                {
-                    AllBarcodeViewModel aVM = this.ObsAllBarcodes[a];
-                    if (aVM.Barcode == barcode)
-                    {
-                        hasDup = true;
-                        aVM.HasDup = true;
-                        Log.Instance.Logger.InfoFormat("Dup={0}", barcode);
-                        dupVM = this.ObsDupBarcodes.FirstOrDefault(x => x.Barcode == barcode);
-                        if (dupVM == null)
-                        {
-                            dupVM = new DupBarcodeViewModel(barcode);
-                            dupVM.AddDupIndex(a + 1);
-                            this.ObsDupBarcodes.Add(dupVM);
-                        }
-                        break;
-                    }
-                }
-                AllBarcodeViewModel newAllVM = new AllBarcodeViewModel(barcode, oldCount + 1);
-                this.ObsAllBarcodes.Add(newAllVM);
-                if (hasDup)
-                {
-                    newAllVM.HasDup = true;
-                    dupVM.AddDupIndex(oldCount + 1);
-                }
-            });
+            //App.Current.Dispatcher.Invoke(() =>
+            App.Current.Dispatcher.BeginInvoke((Action)(delegate
+            //DispatcherHelper.CheckBeginInvokeOnUI((Action)(delegate
+         {
+             int oldCount = this.ObsAllBarcodes.Count;
+             bool hasDup = false;
+             DupBarcodeViewModel dupVM = null;
+             for (int a = 0; a < oldCount; a++)
+             {
+                 AllBarcodeViewModel aVM = this.ObsAllBarcodes[a];
+                 if (aVM.Barcode == barcode)
+                 {
+                     hasDup = true;
+                     aVM.HasDup = true;
+                     Log.Instance.Logger.InfoFormat("Dup={0}", barcode);
+                     dupVM = this.ObsDupBarcodes.FirstOrDefault(x => x.Barcode == barcode);
+                     if (dupVM == null)
+                     {
+                         dupVM = new DupBarcodeViewModel(barcode);
+                         dupVM.AddDupIndex(a + 1);
+                         this.ObsDupBarcodes.Add(dupVM);
+                     }
+                     break;
+                 }
+             }
+             AllBarcodeViewModel newAllVM = new AllBarcodeViewModel(barcode, oldCount + 1);
+             this.ObsAllBarcodes.Add(newAllVM);
+             if (hasDup)
+             {
+                 newAllVM.HasDup = true;
+                 dupVM.AddDupIndex(oldCount + 1);
+             }
+         }));
         }
 
         private string GetFirstPortName()

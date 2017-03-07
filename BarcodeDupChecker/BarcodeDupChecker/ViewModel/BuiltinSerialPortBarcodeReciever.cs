@@ -17,19 +17,32 @@ namespace BarcodeDupChecker.ViewModel
         {
             this.serialPort = new SerialPort("COM?", 9600);
             //this.serialPort.NewLine = "\r\n";
-            this.serialPort.ReceivedBytesThreshold = 13;
+            //this.serialPort.ReceivedBytesThreshold = 5;
 
             this.serialPort.DataReceived += SerialPort_DataReceived;
         }
 
+        private string full = string.Empty;
+        private const char CR = (char)13;
+        private const char LF = (char)10;
+        private char[] splitChars = new char[] { CR, LF };
+        private StringBuilder sb = new StringBuilder("");
+
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            string barcode = this.serialPort.ReadExisting().Replace("\r","").Replace("\n", "");
-            //string barcode = this.serialPort.();
-            if (this.BarcodeRecieved != null)
+            string recieved = this.serialPort.ReadExisting();
+            this.sb.Append(recieved);
+            if (recieved.Contains(CR) || recieved.Contains(LF))
             {
-                this.BarcodeRecieved(this, new BarcodeEventArgs(barcode));
+                string[] ss = sb.ToString().Split(splitChars);
+                if (this.BarcodeRecieved != null)
+                {
+                    this.BarcodeRecieved(this, new BarcodeEventArgs(ss[0]));
+                    this.sb.Clear();
+                    this.sb.Append(ss[1]);
+                }
             }
+
         }
 
         public string PortName
@@ -49,19 +62,6 @@ namespace BarcodeDupChecker.ViewModel
             get
             {
                 return this.serialPort.IsOpen;
-            }
-        }
-
-        public int BarcodeLength
-        {
-            get
-            {
-                return this.serialPort.ReceivedBytesThreshold;
-            }
-
-            set
-            {
-                this.serialPort.ReceivedBytesThreshold = value;
             }
         }
 

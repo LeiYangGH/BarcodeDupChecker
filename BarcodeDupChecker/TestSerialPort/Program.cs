@@ -11,8 +11,40 @@ namespace TestSerialPortSD
     {
         static SerialPort serialPort = new SerialPort();
 
+        const char CR = (char)13;
+        const char LF = (char)10;
+        static char[] splitChars = new char[] { CR, LF };
+        static void SerialPort_DataReceived(string str)
+        {
+            //string barcode = this.serialPort.ReadExisting().Replace("\r","").Replace("\n", "");
+            string recieved = str;
+            full += recieved;
+            if (recieved.Contains(CR) || recieved.Contains(LF))//this.full should not contain
+            {
+                string[] ss = full.Split(splitChars);
+
+                string barcode = ss[0];
+                Console.WriteLine(barcode);
+                full = ss[1];
+
+            }
+
+        }
+
         static void Main(string[] args)
         {
+            SerialPort_DataReceived("abcde\n");
+            SerialPort_DataReceived("abc");
+            SerialPort_DataReceived("de\n");
+            SerialPort_DataReceived("abcd");
+            SerialPort_DataReceived("e\n");
+            SerialPort_DataReceived("a");
+            SerialPort_DataReceived("bcde\n");
+            Console.WriteLine("done");
+            Console.ReadLine();
+            return;
+
+
             ShowAllPortNames();
 
             //-------------------下面的参数就是有可能导致条码截断的原因-------------
@@ -44,7 +76,7 @@ namespace TestSerialPortSD
             //serialPort.Handshake = Handshake.XOnXOff;
 
             //serialPort.RtsEnable = true;//默认值
-                                        //serialPort.RtsEnable = false;
+            //serialPort.RtsEnable = false;
 
             //--------------------------------
 
@@ -66,24 +98,8 @@ namespace TestSerialPortSD
         static string full = "";
         private static void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            //byte[] data = new byte[serialPort.BytesToRead];
-            //serialPort.Read(data, 0, data.Length);
-            //string barcode1 = Encoding.ASCII.GetString(data);
-            //Console.WriteLine(barcode + "\t" + barcode1);
             string barcode = serialPort.ReadExisting();
             Console.WriteLine("<" + barcode + ">");
-
-            //if (barcode.EndsWith("\r") || barcode.EndsWith("\n"))
-            //{
-            //    full += barcode.Replace("\r", "").Replace("\n", "");
-            //    Console.WriteLine("\t\t\t" + full);
-            //    full = "";
-            //}
-            //else
-            //{
-            //    full += barcode; 
-            //}
-           
         }
 
         static void ShowAllPortNames()

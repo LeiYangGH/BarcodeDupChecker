@@ -38,11 +38,6 @@ namespace BarcodeDupChecker.ViewModel
             }
         }
 
-        public int BarcodeLength
-        {
-            get; set;
-        }
-
         private StringBuilder sb = new StringBuilder();
         private void SerialPort_DataReceived(byte b)
         {

@@ -10,8 +10,6 @@ namespace BarcodeDupChecker
     {
         event EventHandler<BarcodeEventArgs> BarcodeRecieved;
         string PortName { get; set; }
-
-        int BarcodeLength { get; set; }
         bool Online { get; }
         void Start();
         void Close();

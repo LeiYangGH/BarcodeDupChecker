@@ -8,39 +8,26 @@ using System.Threading.Tasks;
 using Microsoft.Win32;
 using System.IO;
 using BarcodeDupChecker.Properties;
-using System.Diagnostics;
 using System.Runtime.ExceptionServices;
-using GalaSoft.MvvmLight.Threading;
+using System.Text;
 
 namespace BarcodeDupChecker.ViewModel
 {
     public class MainViewModel : ViewModelBase, IDisposable
     {
-#if SerialPort
-        private IBarcodeReciever barReciever;
-#else
-        private IBarcodeReciever barReciever = new TimerBarcodeReciever();
-#endif
-
+        private SerialPort serialPort = new SerialPort("COM?", 9600);
 
         public MainViewModel()
         {
-#if Test
-            this.UsePInvokeReader = false;
+            this.serialPort.DataReceived += SerialPort_DataReceived;
 
-#else
-            this.UsePInvokeReader = Settings.Default.UsePInvokeReader;
-#endif
-            this.CreateBarcodeReciever();
 #if Test
             this.PortName = "COM10";
 #else
-            this.PortName = this.GetFirstPortName();
+            this.serialPort.PortName = this.GetFirstPortName();
 #endif
-
-
-            this.ObsAllBarcodes = new ObservableCollection<AllBarcodeViewModel>();
-            this.ObsDupBarcodes = new ObservableCollection<DupBarcodeViewModel>();
+            this.obsAllBarcodes = new ObservableCollection<AllBarcodeViewModel>();
+            this.obsDupBarcodes = new ObservableCollection<DupBarcodeViewModel>();
 
             if (IsInDesignMode)
             {
@@ -48,41 +35,25 @@ namespace BarcodeDupChecker.ViewModel
             }
             else
             {
-                MessengerInstance.Register<string>(this, (msg) =>
-                {
-                    this.Message = msg;
-                });
+                //MessengerInstance.Register<string>(this, (msg) =>
+                //{
+                //    this.Message = msg;
+                //});
             }
         }
 
-        private bool usePInvokeReader;
-        public bool UsePInvokeReader
-        {
-            get
-            {
-                return this.usePInvokeReader;
-            }
-            set
-            {
-                if (this.usePInvokeReader != value)
-                {
-                    this.usePInvokeReader = value;
-                    this.RaisePropertyChanged(nameof(UsePInvokeReader));
-                }
-            }
-        }
 
         public string PortName
         {
             get
             {
-                return this.barReciever.PortName;
+                return this.serialPort.PortName;
             }
             set
             {
-                if (this.barReciever.PortName != value)
+                if (this.serialPort.PortName != value)
                 {
-                    this.barReciever.PortName = value;
+                    this.serialPort.PortName = value;
                     this.RaisePropertyChanged(nameof(PortName));
                 }
             }
@@ -92,7 +63,7 @@ namespace BarcodeDupChecker.ViewModel
         {
             get
             {
-                return this.barReciever.Online;
+                return this.serialPort.IsOpen;
             }
 
         }
@@ -198,15 +169,29 @@ namespace BarcodeDupChecker.ViewModel
         }
         private async Task Open()
         {
-            this.barReciever.Start();
+            this.OpenSerialPort();
             this.RaisePropertyChanged(nameof(IsOpened));
             if (this.IsOpened)
             {
                 Settings.Default.PortName = this.PortName;
-                Settings.Default.UsePInvokeReader = this.UsePInvokeReader;
                 Settings.Default.Save();
             }
 
+        }
+
+        public void OpenSerialPort()
+        {
+            try
+            {
+                this.serialPort.Open();
+                Log.Instance.Logger.InfoFormat("open {0} success", this.PortName);
+                this.Message = string.Format("成功打开串口{0}！", this.PortName);
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Logger.FatalFormat(ex.Message);
+                MessengerInstance.Send<string>(ex.Message);
+            }
         }
 
         private bool isCloseing;
@@ -236,17 +221,32 @@ namespace BarcodeDupChecker.ViewModel
                     () => !isCloseing));
             }
         }
+
         [HandleProcessCorruptedStateExceptions]
         private async Task Close()
         {
-            //DispatcherHelper.CheckBeginInvokeOnUI((Action)(delegate
-            App.Current.Dispatcher.BeginInvoke((Action)(delegate
-            {
-                this.barReciever.Close();
-                this.RaisePropertyChanged(nameof(IsOpened));
-            }));
+            //App.Current.Dispatcher.BeginInvoke((Action)(delegate
+            //{
+            this.CloseSerialPort();
+            this.RaisePropertyChanged(nameof(IsOpened));
+            //}));
         }
 
+        public void CloseSerialPort()
+        {
+            try
+            {
+                this.serialPort.Close();
+                Log.Instance.Logger.InfoFormat("close {0} success", this.PortName);
+                this.Message = string.Format("成功关闭串口{0}！", this.PortName);
+
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Logger.FatalFormat(ex.Message);
+                MessengerInstance.Send<string>(ex.Message);
+            }
+        }
 
         private bool isSeting;
         private RelayCommand setCommand;
@@ -283,17 +283,9 @@ namespace BarcodeDupChecker.ViewModel
             setWin.Owner = MainWindow.Instance;
             SettingsViewModel setVM = (setWin.DataContext) as SettingsViewModel;
             setVM.SelectedPortName = this.PortName;
-            setVM.UsePInvokeReader = this.UsePInvokeReader;
 
             if (setWin.ShowDialog() ?? false)
             {
-
-                if (this.UsePInvokeReader != setVM.UsePInvokeReader)
-                {
-                    this.UsePInvokeReader = setVM.UsePInvokeReader;
-                    this.CreateBarcodeReciever();
-                    Log.Instance.Logger.InfoFormat("切换为读{0}串口", this.UsePInvokeReader ? "物理" : "虚拟");
-                }
                 this.PortName = setVM.SelectedPortName;
                 this.RaisePropertyChanged(nameof(IsOpened));
             }
@@ -394,7 +386,7 @@ namespace BarcodeDupChecker.ViewModel
             }
         }
 
-        private async Task ImportBarcodesFromFile()//open
+        private async Task ImportBarcodesFromFile()
         {
             this.ObsDupBarcodes.Clear();
             this.ObsAllBarcodes.Clear();
@@ -412,17 +404,31 @@ namespace BarcodeDupChecker.ViewModel
             }
         }
 
-        private void BarReciever_BarcodeRecieved(object sender, BarcodeEventArgs e)
+
+        private string full = string.Empty;
+        private const char CR = (char)13;
+        private const char LF = (char)10;
+        private char[] splitChars = new char[] { CR, LF };
+        private StringBuilder sb = new StringBuilder("");
+
+        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            this.GotBarcode(e.Barcode);
+            string recieved = this.serialPort.ReadExisting();
+            this.sb.Append(recieved);
+            if (recieved.Contains(CR) || recieved.Contains(LF))
+            {
+                string[] ss = sb.ToString().Split(splitChars);
+                this.GotBarcode(ss[0]);
+                this.sb.Clear();
+                this.sb.Append(ss[1]);
+            }
+
         }
 
         private void GotBarcode(string barcode)
         {
             //if (App.Current != null)//walkaround
-            //App.Current.Dispatcher.Invoke(() =>
             App.Current.Dispatcher.BeginInvoke((Action)(delegate
-            //DispatcherHelper.CheckBeginInvokeOnUI((Action)(delegate
          {
              int oldCount = this.ObsAllBarcodes.Count;
              bool hasDup = false;
@@ -455,6 +461,13 @@ namespace BarcodeDupChecker.ViewModel
          }));
         }
 
+        private Random rnd = new Random();
+        public void AddRandomBarcode()
+        {
+            string barcode= rnd.Next(10000, 10010).ToString().PadLeft(5, '0');
+            this.GotBarcode(barcode);
+        }
+
         private string GetFirstPortName()
         {
             string[] names = SerialPort.GetPortNames();
@@ -471,22 +484,10 @@ namespace BarcodeDupChecker.ViewModel
                 return "COM?";
         }
 
-        private void CreateBarcodeReciever()
-        {
-            if (this.barReciever != null)
-            {
-                this.barReciever.BarcodeRecieved -= BarReciever_BarcodeRecieved;
-                this.barReciever.Dispose();
-            }
-            if (this.UsePInvokeReader)
-                this.barReciever = new PInvokeSerialPortBarcodeReciever();
-            else
-                this.barReciever = new BuiltinSerialPortBarcodeReciever();
-            this.barReciever.BarcodeRecieved += BarReciever_BarcodeRecieved;
-        }
+
         public override void Cleanup()
         {
-            this.barReciever.Close();
+            this.serialPort.Close();
             base.Cleanup();
         }
 
@@ -494,7 +495,7 @@ namespace BarcodeDupChecker.ViewModel
         {
             if (disposing)
             {
-                this.barReciever.Dispose();
+                this.serialPort.Dispose();
             }
         }
         public void Dispose()

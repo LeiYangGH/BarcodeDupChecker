@@ -10,6 +10,7 @@
         DataContext="{Binding Main, Source={StaticResource Locator}}"
         Closing="Window_Closing"
         Unloaded="Window_Loaded"
+        KeyDown="Window_KeyDown"
         WindowStartupLocation="CenterScreen"
         Topmost="{Binding ElementName=chkTop, Path=IsChecked, Mode=OneWay}"
         Title="MainWindow" Height="350" Width="525">
@@ -36,7 +37,6 @@
             <MenuItem Header="{Binding PortName,Mode=OneWay}" Focusable="False"></MenuItem>
             <MenuItem Header="运行" Command="{Binding OpenCommand}" IsEnabled="{Binding IsOpened, Converter={StaticResource InvBool},Mode=OneWay}"></MenuItem>
             <MenuItem Header="停止" Command="{Binding CloseCommand}" IsEnabled="{Binding IsOpened, Mode=OneWay}"></MenuItem>
-            <!--<MenuItem Header="测试增加100个" Visibility="Collapsed" Command="{Binding Add10KCommand}"></MenuItem>-->
             <MenuItem Header="从文件导入条码"   Command="{Binding Add10KCommand}" IsEnabled="{Binding IsOpened, Converter={StaticResource InvBool},Mode=OneWay}"></MenuItem>
             <MenuItem Header="设置" Command="{Binding SetCommand}" IsEnabled="{Binding IsOpened, Converter={StaticResource InvBool},Mode=OneWay}"></MenuItem>
             <MenuItem Header="导出" Command="{Binding ExportCommand}" IsEnabled="{Binding IsOpened, Converter={StaticResource InvBool},Mode=OneWay}"></MenuItem>

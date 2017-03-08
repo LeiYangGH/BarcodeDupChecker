@@ -46,6 +46,7 @@ namespace BarcodeDupChecker
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            
         }
 
         private void lstIndexes_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -68,6 +69,13 @@ namespace BarcodeDupChecker
                 else
                     e.Cancel = true;
             }
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+#if Test
+             this.mainVM.AddRandomBarcode();
+#endif
         }
     }
 }

@@ -15,29 +15,11 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
-        <CheckBox IsChecked="{Binding UsePInvokeReader}" HorizontalAlignment="Center" VerticalAlignment="Center">读物理串口</CheckBox>
-        <Grid Grid.Row="1" IsEnabled="{Binding UsePInvokeReader,Converter={StaticResource InvBool},Mode=OneWay}" >
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="auto"/>
-            </Grid.ColumnDefinitions>
-            <TextBlock Margin="2,0">条码长度</TextBlock>
-            <Slider Name="slider" Grid.Column="1" Minimum="3" Maximum="20" 
-                    Value="{Binding BarcodeLength}"
-                    IsSnapToTickEnabled="True"
-                    Ticks="3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20"></Slider>
-            <TextBlock Margin="2,0" Grid.Column="2" MinWidth="30" FontSize="18" Text="{Binding ElementName=slider,Path=Value,Mode=OneWay}"></TextBlock>
-
-        </Grid>
-        <ComboBox Grid.Row="2" ItemsSource="{Binding ObsSerialPortNames,Mode=OneWay}" Text="{Binding SelectedPortName}"
+        <ComboBox Grid.Row="0" ItemsSource="{Binding ObsSerialPortNames,Mode=OneWay}" Text="{Binding SelectedPortName}"
                   HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="100" FontSize="20">
-
         </ComboBox>
-        <Button Name="btnOK" Click="btnOK_Click" Grid.Row="3" HorizontalAlignment="Right" MinWidth="80" FontSize="18">确定</Button>
+        <Button Name="btnOK" Click="btnOK_Click" Grid.Row="1" HorizontalAlignment="Right" MinWidth="80" FontSize="18">确定</Button>
     </Grid>
 </Window>

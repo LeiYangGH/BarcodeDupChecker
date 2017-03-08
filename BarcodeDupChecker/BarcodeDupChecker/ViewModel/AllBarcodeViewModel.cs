@@ -11,9 +11,9 @@ namespace BarcodeDupChecker.ViewModel
     {
         public AllBarcodeViewModel(string barcode, int index)
         {
-            this.Barcode = barcode;
-            this.Index = index;
-            this.HasDup = false;
+            this.barcode = barcode;
+            this.index = index;
+            this.hasDup = false;
         }
 
         private int index;

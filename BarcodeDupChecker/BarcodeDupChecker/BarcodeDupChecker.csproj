@@ -23,7 +23,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;SerialPort;Test1</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;Test1</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>true</Prefer32Bit>
@@ -78,10 +78,6 @@
       <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="PInvokeSerialPort, Version=1.0.1.0, Culture=neutral, processorArchitecture=x86">
-      <HintPath>..\packages\PInvokeSerialPort.1.0.1\lib\PInvokeSerialPort.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
@@ -122,12 +118,9 @@
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="SqliteRepository.cs" />
-    <Compile Include="TimerBarcodeReciever.cs" />
     <Compile Include="ViewModel\AllBarcodeViewModel.cs" />
-    <Compile Include="ViewModel\BuiltinSerialPortBarcodeReciever.cs" />
     <Compile Include="ViewModel\DupBarcodeViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
-    <Compile Include="ViewModel\PInvokeSerialPortBarcodeReciever.cs" />
     <Compile Include="ViewModel\SettingsViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Page Include="MainWindow.xaml">
@@ -138,7 +131,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="IBarcodeReciever.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

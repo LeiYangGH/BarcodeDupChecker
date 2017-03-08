@@ -12,8 +12,8 @@ namespace BarcodeDupChecker.ViewModel
     {
         public DupBarcodeViewModel(string barcode)
         {
-            this.Barcode = barcode;
-            this.ObsDupIndexes = new ObservableCollection<int>();
+            this.barcode = barcode;
+            this.obsDupIndexes = new ObservableCollection<int>();
         }
 
         private string barcode;
